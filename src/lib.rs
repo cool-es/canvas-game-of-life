@@ -3,7 +3,7 @@ pub mod import {
     // #[link_name = "something"]
 }
 
-const WIDTH: usize = 8;
+const WIDTH: usize = 128;
 const HEIGHT: usize = WIDTH;
 const LENGTH: usize = WIDTH * HEIGHT;
 type Universe = [u8; LENGTH];
