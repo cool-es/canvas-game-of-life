@@ -36,7 +36,7 @@ pub unsafe extern "C" fn tick_universe(uni: *mut Universe) {
     let u = |ci: usize| ci + (LENGTH - WIDTH);
     let d = |ci: usize| ci + WIDTH;
     let l = |ci: usize| {
-        if ci % WIDTH == 1 {
+        if ci % WIDTH == 0 {
             // left side; wrap to right side
             ci + (WIDTH - 1)
         } else {
@@ -52,7 +52,7 @@ pub unsafe extern "C" fn tick_universe(uni: *mut Universe) {
         }
     };
 
-    for index in 0..WIDTH {
+    for index in 0..LENGTH {
         // sum of previous-generation neighbors
         let sum = [
             uni[u(index) % LENGTH],
@@ -68,12 +68,12 @@ pub unsafe extern "C" fn tick_universe(uni: *mut Universe) {
         .sum::<u8>()
             >> 4;
 
-        if uni[index] >> 4 == 1 {
+        if uni[index] == 1 << 4 {
             // cell was alive when tick began
             match sum {
                 // 3 or 4 neighbors: cell lives
                 // set lowest bit ("alive in next gen")
-                3 | 4 => uni[index] ^= 1,
+                2 | 3 => uni[index] ^= 1,
 
                 // otherwise cell dies
                 // lowest bit left blank
