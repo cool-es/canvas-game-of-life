@@ -8,6 +8,11 @@ const HEIGHT: usize = WIDTH;
 const LENGTH: usize = WIDTH * HEIGHT;
 type Universe = [u8; LENGTH];
 
+#[export_name = "arrayLength"]
+pub extern "C" fn array_length() -> i32 {
+    LENGTH as i32
+}
+
 #[export_name = "allocateUniverse"]
 pub extern "C" fn allocate_universe() -> *mut Universe {
     let universe = [0; LENGTH];

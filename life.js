@@ -13,7 +13,7 @@ function main(result) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
     window.rustwasm = result.instance.exports;
     const uni = rustwasm.allocateUniverse();
-    const length = 8 ** 2;
+    const length = rustwasm.arrayLength();
 
     window.universe = uni;
     window.tick = () => { rustwasm.tickUniverse(uni); };
