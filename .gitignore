@@ -1,0 +1,3 @@
+/target
+wasmname.js
+*.wasm
