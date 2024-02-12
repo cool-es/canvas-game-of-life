@@ -94,6 +94,23 @@ pub unsafe extern "C" fn tick_universe(uni: *mut Universe) {
     }
 }
 
+#[export_name = "timeCrunch"]
+pub unsafe extern "C" fn time_crunch(uni: *mut Universe, gens: i32) {
+    for _i in 0..gens {
+        tick_universe(uni);
+    }
+}
+
+#[export_name = "toggleCell"]
+pub unsafe extern "C" fn toggle_cell(uni: *mut Universe, x: i32, y: i32) {
+    assert!(!uni.is_null());
+    let uni = &mut *uni;
+    let x = (x % WIDTH as i32) as usize;
+    let y = (y % HEIGHT as i32) as usize;
+
+    uni[x + y * WIDTH] ^= 1;
+}
+
 #[export_name = "removeUniverse"]
 pub unsafe extern "C" fn remove_universe(uni: *mut Universe) {
     drop(Box::from_raw(uni));
