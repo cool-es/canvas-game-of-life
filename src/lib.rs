@@ -33,36 +33,36 @@ pub unsafe extern "C" fn tick_universe(uni: *mut Universe) {
         *c = if (*c & 1) == 1 { 1 << 4 } else { 0 };
     }
 
-    let u = |ci: usize| (ci + (LENGTH - WIDTH)) % LENGTH;
-    let d = |ci: usize| (ci + WIDTH) % LENGTH;
+    let u = |ci: usize| ci + (LENGTH - WIDTH);
+    let d = |ci: usize| ci + WIDTH;
     let l = |ci: usize| {
-        (if ci % WIDTH == 1 {
+        if ci % WIDTH == 1 {
             // left side; wrap to right side
             ci + (WIDTH - 1)
         } else {
             ci - 1
-        }) % LENGTH
+        }
     };
     let r = |ci: usize| {
-        (if (ci + 1) % WIDTH == 0 {
+        if (ci + 1) % WIDTH == 0 {
             // right side; wrap to left side
             ci + (LENGTH - WIDTH + 1)
         } else {
             ci + 1
-        }) % LENGTH
+        }
     };
 
     for index in 0..WIDTH {
         // sum of previous-generation neighbors
         let sum = [
-            uni[u(index)],
-            uni[d(index)],
-            uni[l(index)],
-            uni[r(index)],
-            uni[u(l(index))],
-            uni[d(l(index))],
-            uni[u(r(index))],
-            uni[d(r(index))],
+            uni[u(index) % LENGTH],
+            uni[d(index) % LENGTH],
+            uni[l(index) % LENGTH],
+            uni[r(index) % LENGTH],
+            uni[u(l(index)) % LENGTH],
+            uni[d(l(index)) % LENGTH],
+            uni[u(r(index)) % LENGTH],
+            uni[d(r(index)) % LENGTH],
         ]
         .into_iter()
         .sum::<u8>()
