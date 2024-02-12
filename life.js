@@ -12,7 +12,7 @@ function main(result) {
     console.log('WASM loaded!')
     window.rustwasm = result.instance.exports;
     const uni = rustwasm.allocateUniverse();
-    const length = 32**2;
+    const length = 8**2;
 
     window.universe = uni;
     window.tick = () => { rustwasm.tickUniverse(uni); }

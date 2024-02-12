@@ -3,8 +3,8 @@ pub mod import {
     // #[link_name = "something"]
 }
 
-const WIDTH: usize = 32;
-const HEIGHT: usize = 32;
+const WIDTH: usize = 8;
+const HEIGHT: usize = WIDTH;
 const LENGTH: usize = WIDTH * HEIGHT;
 type Universe = [u8; LENGTH];
 
@@ -16,12 +16,81 @@ pub extern "C" fn allocate_universe() -> *mut Universe {
 
 #[export_name = "tickUniverse"]
 pub unsafe extern "C" fn tick_universe(uni: *mut Universe) {
-    // this other variant compiles to identical code:
-    //    if !uni.is_null() {
-    //        (&mut *uni)[9] = 2;
-    //    }
-    if let Some(uni) = uni.as_mut() {
-        uni[9] = 2;
+    assert!(!uni.is_null());
+    let uni = &mut *uni;
+
+    // encoding: last bits of u8
+    //         ... 0  0  0  0  0
+    //     bit ... 4  3  2  1  0
+    // bit 4: status in generation before tick
+    // bit 0: status in generation after tick
+    // this is chosen because every cell has 8 neighbors,
+    // so we can sum cell values together, and then mask out
+    // the bottom bits.
+
+    // set array
+    for c in uni.iter_mut() {
+        *c = if (*c & 1) == 1 { 1 << 4 } else { 0 };
+    }
+
+    let u = |ci: usize| (ci + (LENGTH - WIDTH)) % LENGTH;
+    let d = |ci: usize| (ci + WIDTH) % LENGTH;
+    let l = |ci: usize| {
+        (if ci % WIDTH == 1 {
+            // left side; wrap to right side
+            ci + (WIDTH - 1)
+        } else {
+            ci - 1
+        }) % LENGTH
+    };
+    let r = |ci: usize| {
+        (if (ci + 1) % WIDTH == 0 {
+            // right side; wrap to left side
+            ci + (LENGTH - WIDTH + 1)
+        } else {
+            ci + 1
+        }) % LENGTH
+    };
+
+    for index in 0..WIDTH {
+        // sum of previous-generation neighbors
+        let sum = [
+            uni[u(index)],
+            uni[d(index)],
+            uni[l(index)],
+            uni[r(index)],
+            uni[u(l(index))],
+            uni[d(l(index))],
+            uni[u(r(index))],
+            uni[d(r(index))],
+        ]
+        .into_iter()
+        .sum::<u8>()
+            >> 4;
+
+        if uni[index] >> 4 == 1 {
+            // cell was alive when tick began
+            match sum {
+                // 3 or 4 neighbors: cell lives
+                // set lowest bit ("alive in next gen")
+                3 | 4 => uni[index] ^= 1,
+
+                // otherwise cell dies
+                // lowest bit left blank
+                _ => {}
+            }
+        } else {
+            // cell was empty when tick began
+            match sum {
+                // 3 neighbors: cell is born
+                // set lowest bit ("alive in next gen")
+                3 => uni[index] ^= 1,
+
+                // otherwise nothing happens
+                // lowest bit left blank
+                _ => {}
+            }
+        }
     }
 }
 
