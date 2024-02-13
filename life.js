@@ -1,5 +1,5 @@
 import { wasmName } from './wasmname.js';
-const perfZero = performance.now();
+let perfZero = performance.now();
 
 window.onload = function () {
     WebAssembly.instantiateStreaming(fetch(wasmName), functionImports)
@@ -23,7 +23,8 @@ function makeString(ptr, len) {
     return out;
 }
 
-window.makef32arr = (ptr, len) => {
+window.makef32arr = (ptr) => {
+    let len = 20;
     if (f32cache === undefined) {
         f32cache = new Float32Array(rustwasm.memory.buffer);
     }
@@ -75,22 +76,22 @@ function main(result) {
 
         lifecheck('Initial');
 
-        const perfLoopZero = performance.now();
+        perfZero = performance.now();
 
         const cycles = 10000;
         for (let i = 0; i < cycles; i++) {
             rustwasm.tickUniverse(uni);
         }
 
-        console.log(`Simulated ${cycles} generations in ${performance.now() - perfLoopZero}ms`);
+        console.log(`Simulated ${cycles} generations in ${performance.now() - perfZero}ms`);
 
         lifecheck('JS/WASM');
 
-        const perfCrunchZero = performance.now();
+        perfZero = performance.now();
 
         rustwasm.timeCrunch(uni, cycles);
 
-        console.log(`Crunched ${cycles} generations in ${performance.now() - perfCrunchZero}ms`);
+        console.log(`Crunched ${cycles} generations in ${performance.now() - perfZero}ms`);
         lifecheck('WASM');
     };
 }
