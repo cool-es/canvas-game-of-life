@@ -8,6 +8,7 @@ window.onload = function () {
 };
 
 let bufcache;
+let f32cache;
 let decoder;
 
 function makeString(ptr, len) {
@@ -21,6 +22,15 @@ function makeString(ptr, len) {
     rustwasm.deallocUint8Array(ptr);
     return out;
 }
+
+window.makef32arr = (ptr, len) => {
+    if (f32cache === undefined) {
+        f32cache = new Float32Array(rustwasm.memory.buffer);
+    }
+    let out = f32cache.subarray((ptr / 4), ptr / 4 + len);
+    // rustwasm.deallocFloat32Array(ptr);
+    return out;
+};
 
 const functionImports = {
     math: Math,

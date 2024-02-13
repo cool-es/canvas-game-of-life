@@ -46,6 +46,15 @@ const HEIGHT: usize = WIDTH;
 const LENGTH: usize = WIDTH * HEIGHT;
 type Universe = [u8; LENGTH];
 
+#[export_name = "allocFloat32Array"]
+pub extern "C" fn alloc_float32_array() -> *mut [f32; 20] {
+    let mut arr = [0.0; 20];
+    for (i, elem) in arr.iter_mut().enumerate() {
+        *elem = ((std::f32::consts::PI * i as f32) / 10.0).sin();
+    }
+    Box::into_raw(Box::new(arr))
+}
+
 // this command doesn't seem to actually do anything -
 // it seems like it can't change the buffer at all?
 #[export_name = "deallocUint8Array"]
