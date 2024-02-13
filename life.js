@@ -7,14 +7,36 @@ window.onload = function () {
         .catch(failure);
 };
 
-const functionImports = { env: {} };
+let bufcache;
+let decoder;
+
+function makeString(ptr, len) {
+    if (bufcache === undefined) {
+        bufcache = new Uint8Array(rustwasm.memory.buffer);
+    }
+    if (decoder === undefined) {
+        decoder = new TextDecoder;
+    }
+    return (decoder).decode(bufcache.subarray(ptr, ptr + len));
+    rustwasm.deallocUint8Array(ptr);
+}
+
+const functionImports = {
+    math: Math,
+    window: window,
+    console: console,
+    shim: {
+        info_str: (ptr, len) => {
+            console.info(makeString(ptr, len));
+        },
+    },
+};
 
 function main(result) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
     window.rustwasm = result.instance.exports;
     const uni = rustwasm.allocateUniverse();
     const length = rustwasm.arrayLength();
-
     window.universe = uni;
     window.tick = () => { rustwasm.tickUniverse(uni); };
     window.view = () => {
@@ -23,11 +45,22 @@ function main(result) {
     window.tcell = (x, y) => { rustwasm.toggleCell(uni, x, y); };
 
     // making a glider
-    rustwasm.toggleCell(uni, 1, 0);
-    rustwasm.toggleCell(uni, 2, 1);
-    rustwasm.toggleCell(uni, 0, 2);
-    rustwasm.toggleCell(uni, 1, 2);
-    rustwasm.toggleCell(uni, 2, 2);
+    // rustwasm.toggleCell(uni, 1, 0);
+    // rustwasm.toggleCell(uni, 2, 1);
+    // rustwasm.toggleCell(uni, 0, 2);
+    // rustwasm.toggleCell(uni, 1, 2);
+    // rustwasm.toggleCell(uni, 2, 2);
+
+    // fill universe with white noise
+    rustwasm.addNoiseToUniverse(uni, 0.7);
+
+    function lifecheck(str) {
+        const a = view();
+        let count = 0;
+        for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
+        console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / length) / 10}%)`);
+    }
+    lifecheck('Initial');
 
     const perfLoopZero = performance.now();
 
@@ -38,20 +71,14 @@ function main(result) {
 
     console.log(`Simulated ${cycles} generations in ${performance.now() - perfLoopZero}ms`);
 
-    function lifecheck() {
-        const a = view();
-        let count = 0;
-        for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
-        console.log(`Population count: ${count}`);
-    }
-    lifecheck();
+    lifecheck('JS/WASM');
 
     const perfCrunchZero = performance.now();
 
     rustwasm.timeCrunch(uni, cycles);
 
     console.log(`Crunched ${cycles} generations in ${performance.now() - perfCrunchZero}ms`);
-    lifecheck();
+    lifecheck('WASM');
 }
 
 function failure(error) { console.error(error); }

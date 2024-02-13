@@ -1,12 +1,55 @@
 pub mod import {
-    // #[link(wasm_import_module(functions))]
-    // #[link_name = "something"]
+    pub mod math {
+        #[link(wasm_import_module = "math")]
+        extern "C" {
+            pub fn random() -> f32;
+        }
+    }
+    pub mod window {
+        #[link(wasm_import_module = "window")]
+        extern "C" {
+            pub fn alert(message: i32);
+        }
+    }
+    pub mod console {
+        #[link(wasm_import_module = "console")]
+        extern "C" {
+            pub fn log(num: i32);
+        }
+    }
+    pub mod shim {
+        #[link(wasm_import_module = "shim")]
+        extern "C" {
+            pub fn info_str(ptr: *const u8, len: usize);
+        }
+    }
+}
+
+mod shim {
+    use crate::import::shim::*;
+
+    pub unsafe fn info<T>(msg: T)
+    where
+        String: From<T>,
+    {
+        let str = String::from(msg);
+        info_str(str.as_ptr(), str.len());
+    }
 }
 
 const WIDTH: usize = 128;
 const HEIGHT: usize = WIDTH;
 const LENGTH: usize = WIDTH * HEIGHT;
 type Universe = [u8; LENGTH];
+
+#[export_name = "deallocUint8Array"]
+pub unsafe extern "C" fn dealloc_u8_array(ptr: *mut u8) {
+    dealloc(ptr)
+}
+
+unsafe fn dealloc<T>(ptr: *mut T) {
+    drop(Box::from_raw(ptr));
+}
 
 #[export_name = "arrayLength"]
 pub extern "C" fn array_length() -> i32 {
@@ -17,6 +60,19 @@ pub extern "C" fn array_length() -> i32 {
 pub extern "C" fn allocate_universe() -> *mut Universe {
     let universe = [0; LENGTH];
     Box::into_raw(Box::new(universe))
+}
+
+#[export_name = "addNoiseToUniverse"]
+pub unsafe extern "C" fn add_noise_to_universe(uni: *mut Universe, density: f32) {
+    shim::info("*pssshhhh*");
+    assert!(!uni.is_null());
+    let uni = &mut *uni;
+
+    for i in uni.iter_mut() {
+        if import::math::random() < density {
+            *i ^= 1;
+        }
+    }
 }
 
 #[export_name = "tickUniverse"]
@@ -76,7 +132,7 @@ pub unsafe extern "C" fn tick_universe(uni: *mut Universe) {
         if uni[index] == 1 << 4 {
             // cell was alive when tick began
             match sum {
-                // 3 or 4 neighbors: cell lives
+                // 2 or 3 neighbors: cell lives
                 // set lowest bit ("alive in next gen")
                 2 | 3 => uni[index] ^= 1,
 
@@ -118,5 +174,5 @@ pub unsafe extern "C" fn toggle_cell(uni: *mut Universe, x: i32, y: i32) {
 
 #[export_name = "removeUniverse"]
 pub unsafe extern "C" fn remove_universe(uni: *mut Universe) {
-    drop(Box::from_raw(uni));
+    dealloc(uni);
 }
