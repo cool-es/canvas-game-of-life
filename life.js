@@ -17,8 +17,9 @@ function makeString(ptr, len) {
     if (decoder === undefined) {
         decoder = new TextDecoder;
     }
-    return (decoder).decode(bufcache.subarray(ptr, ptr + len));
+    let out = (decoder).decode(bufcache.subarray(ptr, ptr + len));
     rustwasm.deallocUint8Array(ptr);
+    return out;
 }
 
 const functionImports = {

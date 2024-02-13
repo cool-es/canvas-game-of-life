@@ -18,22 +18,26 @@ pub mod import {
         }
     }
     pub mod shim {
+        use std::ffi::c_char;
         #[link(wasm_import_module = "shim")]
         extern "C" {
-            pub fn info_str(ptr: *const u8, len: usize);
+            pub fn info_str(ptr: *mut c_char, len: usize);
         }
     }
 }
 
 mod shim {
-    use crate::import::shim::*;
+    use crate::import::shim;
+    use std::ffi::CString;
 
     pub unsafe fn info<T>(msg: T)
     where
-        String: From<T>,
+        T: Into<Vec<u8>>,
     {
-        let str = String::from(msg);
-        info_str(str.as_ptr(), str.len());
+        let string = CString::new(msg).unwrap_or_default();
+        let len = string.as_bytes().len();
+        let ptr = string.into_raw();
+        shim::info_str(ptr, len);
     }
 }
 
@@ -42,9 +46,13 @@ const HEIGHT: usize = WIDTH;
 const LENGTH: usize = WIDTH * HEIGHT;
 type Universe = [u8; LENGTH];
 
+// this command doesn't seem to actually do anything -
+// it seems like it can't change the buffer at all?
 #[export_name = "deallocUint8Array"]
-pub unsafe extern "C" fn dealloc_u8_array(ptr: *mut u8) {
-    dealloc(ptr)
+pub unsafe extern "C" fn dealloc_uint8_array(ptr: *mut std::ffi::c_char) {
+    // let pp = &mut *(ptr as *mut [u8; 4]);
+    // *pp = [48, 49, 50, 51];
+    dealloc(ptr);
 }
 
 unsafe fn dealloc<T>(ptr: *mut T) {
