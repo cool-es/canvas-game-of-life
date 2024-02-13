@@ -55,41 +55,44 @@ function main(result) {
     };
     window.tcell = (x, y) => { rustwasm.toggleCell(uni, x, y); };
 
-    // making a glider
-    // rustwasm.toggleCell(uni, 1, 0);
-    // rustwasm.toggleCell(uni, 2, 1);
-    // rustwasm.toggleCell(uni, 0, 2);
-    // rustwasm.toggleCell(uni, 1, 2);
-    // rustwasm.toggleCell(uni, 2, 2);
+    window.run = () => {
+        function lifecheck(str) {
+            const a = view();
+            let count = 0;
+            for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
+            console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / length) / 10}%)`);
+        }
 
-    // fill universe with white noise
-    rustwasm.addNoiseToUniverse(uni, 0.7);
+        // making a glider
+        // rustwasm.toggleCell(uni, 1, 0);
+        // rustwasm.toggleCell(uni, 2, 1);
+        // rustwasm.toggleCell(uni, 0, 2);
+        // rustwasm.toggleCell(uni, 1, 2);
+        // rustwasm.toggleCell(uni, 2, 2);
 
-    function lifecheck(str) {
-        const a = view();
-        let count = 0;
-        for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
-        console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / length) / 10}%)`);
-    }
-    lifecheck('Initial');
+        // fill universe with white noise
+        rustwasm.addNoiseToUniverse(uni, 0.7);
 
-    const perfLoopZero = performance.now();
+        lifecheck('Initial');
 
-    const cycles = 10000;
-    for (let i = 0; i < cycles; i++) {
-        rustwasm.tickUniverse(uni);
-    }
+        const perfLoopZero = performance.now();
 
-    console.log(`Simulated ${cycles} generations in ${performance.now() - perfLoopZero}ms`);
+        const cycles = 10000;
+        for (let i = 0; i < cycles; i++) {
+            rustwasm.tickUniverse(uni);
+        }
 
-    lifecheck('JS/WASM');
+        console.log(`Simulated ${cycles} generations in ${performance.now() - perfLoopZero}ms`);
 
-    const perfCrunchZero = performance.now();
+        lifecheck('JS/WASM');
 
-    rustwasm.timeCrunch(uni, cycles);
+        const perfCrunchZero = performance.now();
 
-    console.log(`Crunched ${cycles} generations in ${performance.now() - perfCrunchZero}ms`);
-    lifecheck('WASM');
+        rustwasm.timeCrunch(uni, cycles);
+
+        console.log(`Crunched ${cycles} generations in ${performance.now() - perfCrunchZero}ms`);
+        lifecheck('WASM');
+    };
 }
 
 function failure(error) { console.error(error); }
