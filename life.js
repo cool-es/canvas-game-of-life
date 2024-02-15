@@ -38,8 +38,14 @@ const functionImports = {
     window: window,
     console: console,
     shim: {
-        info_str: (ptr, len) => {
+        error: (ptr, len) => {
+            console.error(makeString(ptr, len));
+        },
+        info: (ptr, len) => {
             console.info(makeString(ptr, len));
+        },
+        log: (ptr, len) => {
+            console.log(makeString(ptr, len));
         },
     },
 };

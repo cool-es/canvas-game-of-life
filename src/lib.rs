@@ -1,3 +1,5 @@
+use import::*;
+
 pub mod import {
     pub mod math {
         #[link(wasm_import_module = "math")]
@@ -21,23 +23,11 @@ pub mod import {
         use std::ffi::c_char;
         #[link(wasm_import_module = "shim")]
         extern "C" {
-            pub fn info_str(ptr: *mut c_char, len: usize);
+            // receive string pointer and print to console
+            pub fn error(ptr: *mut c_char, len: usize);
+            pub fn info(ptr: *mut c_char, len: usize);
+            pub fn log(ptr: *mut c_char, len: usize);
         }
-    }
-}
-
-mod shim {
-    use crate::import::shim;
-    use std::ffi::CString;
-
-    pub unsafe fn info<T>(msg: T)
-    where
-        T: Into<Vec<u8>>,
-    {
-        let string = CString::new(msg).unwrap_or_default();
-        let len = string.as_bytes().len();
-        let ptr = string.into_raw();
-        shim::info_str(ptr, len);
     }
 }
 
@@ -45,6 +35,21 @@ const WIDTH: usize = 128;
 const HEIGHT: usize = WIDTH;
 const LENGTH: usize = WIDTH * HEIGHT;
 type Universe = [u8; LENGTH];
+
+// for use with the shim::error/info/log functions
+fn print<T>(msg: T, func: unsafe extern "C" fn(*mut std::ffi::c_char, usize))
+where
+    T: Into<Vec<u8>>,
+{
+    let string = std::ffi::CString::new(msg).unwrap_or_default();
+    let len = string.as_bytes().len();
+    let ptr = string.into_raw();
+
+    // only passing two integers; it's safe
+    unsafe {
+        func(ptr, len);
+    }
+}
 
 #[export_name = "allocFloat32Array"]
 pub extern "C" fn alloc_float32_array() -> *mut [f32; 20] {
@@ -81,12 +86,12 @@ pub extern "C" fn allocate_universe() -> *mut Universe {
 
 #[export_name = "addNoiseToUniverse"]
 pub unsafe extern "C" fn add_noise_to_universe(uni: *mut Universe, density: f32) {
-    shim::info("*pssshhhh*");
+    print("*pssshhhh*", shim::info);
     assert!(!uni.is_null());
     let uni = &mut *uni;
 
     for i in uni.iter_mut() {
-        if import::math::random() < density {
+        if math::random() < density {
             *i ^= 1;
         }
     }
