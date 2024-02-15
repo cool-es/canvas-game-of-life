@@ -54,10 +54,34 @@ where
 #[export_name = "allocFloat32Array"]
 pub extern "C" fn alloc_float32_array() -> *mut [f32; 20] {
     let mut arr = [0.0; 20];
+    let mut str = String::new();
     for (i, elem) in arr.iter_mut().enumerate() {
-        *elem = ((std::f32::consts::PI * i as f32) / 10.0).sin();
+        let val = ((std::f32::consts::PI * i as f32) / 10.0).sin();
+        str += &format!("{val:.16}\n");
+        *elem = val;
     }
-    Box::into_raw(Box::new(arr))
+    let into_raw = Box::into_raw(Box::new(arr));
+    str += &format!("Pointer: {}", into_raw as usize);
+    print(str, shim::info);
+    into_raw
+}
+
+#[export_name = "rewriteFloat32Array"]
+pub unsafe extern "C" fn rewrite_float32_array(ptr: *mut [f32; 20]) {
+    // assert!(!ptr.is_null());
+    if ptr.is_null() {
+        print("pointer is null!!! wtf!!! 👿", shim::error);
+        panic!();
+    }
+    let ptr = &mut *ptr;
+
+    let mut str = String::from("Rewriting...\n");
+    for (_i, elem) in ptr.iter_mut().enumerate() {
+        let val = math::random();
+        str += &format!("{val:.16}\n");
+        *elem = val;
+    }
+    print(str, shim::info);
 }
 
 // this command doesn't seem to actually do anything -

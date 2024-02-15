@@ -23,15 +23,29 @@ function makeString(ptr, len) {
     return out;
 }
 
-window.makef32arr = (ptr) => {
+let f32ptr;
+
+window.makef32arr = () => {
+    if (f32ptr === undefined) {
+        f32ptr = rustwasm.allocFloat32Array();
+        console.log(`js: pointer set to ${f32ptr}`);
+    } else {
+        console.log(`js: pointer already exists; ${f32ptr}`);
+    }
     let len = 20;
     if (f32cache === undefined) {
         f32cache = new Float32Array(rustwasm.memory.buffer);
     }
-    let out = f32cache.subarray((ptr / 4), ptr / 4 + len);
-    // rustwasm.deallocFloat32Array(ptr);
+    let out = Array.from(f32cache.subarray((f32ptr / 4), f32ptr / 4 + len));
     return out;
 };
+
+window.rwf32arr = () => {
+    if (f32ptr === undefined) {
+        console.info(`(js: pointer is undefined)}`);
+    }
+    rustwasm.rewriteFloat32Array(f32ptr);
+}
 
 const functionImports = {
     math: Math,
