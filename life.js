@@ -7,44 +7,36 @@ window.onload = function () {
         .catch(failure);
 };
 
-let bufcache;
-let f32cache;
-let decoder;
+let bufferCache;
+let decoderCache;
+let stringPtr;
+let f32Ptr;
+let f32Len;
 
-function makeString(ptr, len) {
-    if (bufcache === undefined) {
-        bufcache = new Uint8Array(rustwasm.memory.buffer);
+function makeString(len) {
+    if (bufferCache === undefined) {
+        bufferCache = new Uint8Array(rustwasm.memory.buffer);
     }
-    if (decoder === undefined) {
-        decoder = new TextDecoder;
+    if (decoderCache === undefined) {
+        decoderCache = new TextDecoder;
     }
-    let out = (decoder).decode(bufcache.subarray(ptr, ptr + len));
-    rustwasm.deallocUint8Array(ptr);
-    return out;
+    return decoderCache.decode(bufferCache.subarray(stringPtr, stringPtr + len));
 }
 
-let f32ptr;
+function makeFloatArray() {
+    return Array.from(
+        new Float32Array(rustwasm.memory.buffer).subarray((f32Ptr / 4), f32Ptr / 4 + f32Len)
+    );
+}
 
-window.makef32arr = () => {
-    if (f32ptr === undefined) {
-        f32ptr = rustwasm.allocFloat32Array();
-        console.log(`js: pointer set to ${f32ptr}`);
-    } else {
-        console.log(`js: pointer already exists; ${f32ptr}`);
-    }
-    let len = 20;
-    if (f32cache === undefined) {
-        f32cache = new Float32Array(rustwasm.memory.buffer);
-    }
-    let out = Array.from(f32cache.subarray((f32ptr / 4), f32ptr / 4 + len));
-    return out;
-};
+window.noiseFloats = () => {
+    rustwasm.rewriteFloat32Array(f32Ptr);
+    return makeFloatArray();
+}
 
-window.rwf32arr = () => {
-    if (f32ptr === undefined) {
-        console.info(`(js: pointer is undefined)}`);
-    }
-    rustwasm.rewriteFloat32Array(f32ptr);
+window.fillFloats = () => {
+    rustwasm.fillFloat32Array(f32Ptr);
+    return makeFloatArray();
 }
 
 const functionImports = {
@@ -52,14 +44,14 @@ const functionImports = {
     window: window,
     console: console,
     shim: {
-        error: (ptr, len) => {
-            console.error(makeString(ptr, len));
+        error: len => {
+            console.error(makeString(len));
         },
-        info: (ptr, len) => {
-            console.info(makeString(ptr, len));
+        info: len => {
+            console.info(makeString(len));
         },
-        log: (ptr, len) => {
-            console.log(makeString(ptr, len));
+        log: len => {
+            console.log(makeString(len));
         },
     },
 };
@@ -67,21 +59,30 @@ const functionImports = {
 function main(result) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
     window.rustwasm = result.instance.exports;
-    const uni = rustwasm.allocateUniverse();
-    const length = rustwasm.arrayLength();
-    window.universe = uni;
-    window.tick = () => { rustwasm.tickUniverse(uni); };
-    window.view = () => {
-        return new Uint8Array(rustwasm.memory.buffer, uni).subarray(0, length);
-    };
-    window.tcell = (x, y) => { rustwasm.toggleCell(uni, x, y); };
 
-    window.run = () => {
+    const uniPtr = rustwasm.getInfo(1);
+    const uniLen = rustwasm.getInfo(10);
+    stringPtr = rustwasm.getInfo(2);
+    f32Ptr = rustwasm.getInfo(3);
+    f32Len = rustwasm.getInfo(30);
+
+    window.maxStr = () => { return rustwasm.getInfo(21); }
+
+    window.viewUni = () => {
+        if (bufferCache === undefined) {
+            bufferCache = new Uint8Array(rustwasm.memory.buffer);
+        }
+        return bufferCache.subarray(uniPtr, uniPtr + uniLen);
+    }
+
+    // window.tcell = (x, y) => { rustwasm.toggleCell(x, y); };
+
+    window.runLife = () => {
         function lifecheck(str) {
-            const a = view();
+            const a = viewUni();
             let count = 0;
             for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
-            console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / length) / 10}%)`);
+            console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / uniLen) / 10}%)`);
         }
 
         // making a glider
@@ -92,24 +93,22 @@ function main(result) {
         // rustwasm.toggleCell(uni, 2, 2);
 
         // fill universe with white noise
-        rustwasm.addNoiseToUniverse(uni, 0.7);
 
+        rustwasm.addNoiseToUniverse(0.7);
         lifecheck('Initial');
-
         perfZero = performance.now();
-
         const cycles = 10000;
         for (let i = 0; i < cycles; i++) {
-            rustwasm.tickUniverse(uni);
+            rustwasm.tickUniverse();
         }
 
         console.log(`Simulated ${cycles} generations in ${performance.now() - perfZero}ms`);
-
         lifecheck('JS/WASM');
 
+        rustwasm.addNoiseToUniverse(0.7);
+        lifecheck('Initial');
         perfZero = performance.now();
-
-        rustwasm.timeCrunch(uni, cycles);
+        rustwasm.timeCrunch(cycles);
 
         console.log(`Crunched ${cycles} generations in ${performance.now() - perfZero}ms`);
         lifecheck('WASM');
