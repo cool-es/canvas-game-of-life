@@ -18,6 +18,7 @@ button {
 body {
     text-align: center;
     width: fit-content;
+    color: white;
 }
 
 .flex {
