@@ -129,24 +129,33 @@ function main(result) {
     }
 
     function startLife() {
-        if (handle == 0) {
-            handle = setInterval(() => {
-                rustwasm.tickUniverse();
-                lifeupdate();
-            }, 50);
-        }
         playing = true;
         pb.innerText = 'Pause';
+        requestAnimationFrame(startLoop);
     }
 
     function stopLife() {
-        if (handle != 0) {
-            clearInterval(handle);
-            handle = 0;
-        }
         playing = false;
         pb.innerText = 'Play';
     }
+
+    let zero;
+    function startLoop(timestamp) {
+        zero = timestamp;
+        requestAnimationFrame(loopLoop);
+    }
+
+    function loopLoop(timestamp) {
+        if (timestamp - zero > 50) {
+            rustwasm.tickUniverse()
+            lifeupdate();
+            zero = timestamp;
+        }
+        if (playing) {
+            requestAnimationFrame((t) => { loopLoop(t) });
+        }
+    }
+
 
     // window.tcell = (x, y) => { rustwasm.toggleCell(x, y); };
 
