@@ -163,16 +163,16 @@ pub unsafe extern "C" fn tick_universe() {
     let d = |ci: usize| ci + WIDTH;
     let l = |ci: usize| {
         if ci % WIDTH == 0 {
-            // left side; wrap to right side
-            ci + (WIDTH - 1)
+            // left side; wrap to right side - möbius strip
+            (LENGTH - 1) - ci
         } else {
             ci - 1
         }
     };
     let r = |ci: usize| {
         if (ci + 1) % WIDTH == 0 {
-            // right side; wrap to left side
-            ci + (LENGTH - WIDTH + 1)
+            // right side; wrap to left side - möbius strip
+            (LENGTH - 1) - ci
         } else {
             ci + 1
         }
