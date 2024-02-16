@@ -23,26 +23,16 @@ function makeString(len) {
     return decoderCache.decode(bufferCache.subarray(stringPtr, stringPtr + len));
 }
 
-function makeFloatArray() {
+window.makeFloatArray = () => {
     return Array.from(
         new Float32Array(rustwasm.memory.buffer).subarray((f32Ptr / 4), f32Ptr / 4 + f32Len)
     );
 }
 
-window.noiseFloats = () => {
-    rustwasm.rewriteFloat32Array(f32Ptr);
-    return makeFloatArray();
-}
-
-window.fillFloats = () => {
-    rustwasm.fillFloat32Array(f32Ptr);
-    return makeFloatArray();
-}
-
 const functionImports = {
+    console: console,
     math: Math,
     window: window,
-    console: console,
     shim: {
         error: len => {
             console.error(makeString(len));

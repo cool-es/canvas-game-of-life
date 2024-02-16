@@ -13,12 +13,6 @@ pub mod import {
             pub fn random() -> f32;
         }
     }
-    pub mod performance {
-        #[link(wasm_import_module = "performance")]
-        extern "C" {
-            pub fn now() -> i32;
-        }
-    }
     pub mod window {
         #[link(wasm_import_module = "window")]
         extern "C" {
@@ -49,8 +43,8 @@ const LENGTH: usize = WIDTH * HEIGHT;
 static mut UNI: [u8; LENGTH] = [0; LENGTH];
 static mut TEXT: [u8; 512] = [0; 512];
 
-// 1 second of cd-quality mono audio
-static mut FLOATS: [f32; 44100] = [0.0; 44100];
+// 2^24 samples (64 MB)
+static mut FLOATS: [f32; 16777216] = [0.0; 16777216];
 
 // longest string printed yet, to see how long
 // the string buffer might need to be
@@ -73,26 +67,44 @@ where
     }
 }
 
-#[export_name = "fillFloat32Array"]
-pub unsafe extern "C" fn fill_float32_array() {
-    let mut str = String::new();
+#[export_name = "f32Sine"]
+pub unsafe extern "C" fn f32_sine() {
+    let perf_zero = shim::now();
     for (i, elem) in FLOATS.iter_mut().enumerate() {
-        let val = ((2.0 * std::f32::consts::PI * i as f32) / FLOATS.len() as f32).sin();
-        str += &format!("{val:.16}\n");
-        *elem = val;
+        *elem = ((2.0 * std::f32::consts::PI * i as f32) / FLOATS.len() as f32).sin();
     }
-    print(str, shim::info);
+    let time = shim::now() - perf_zero;
+    print(
+        format!(
+            "Filled {} element ({} s @ 44.1 kHz) f32 array with sine wave in {} ms (generation rate {} MHz, {} s/s)",
+            FLOATS.len(),
+            FLOATS.len() as f32 / 44100.0,
+            time,
+            FLOATS.len() as f32 / (1000.0 * time as f32),
+            FLOATS.len() as f32 / (44.1 * time as f32),
+        ),
+        shim::info,
+    );
 }
 
-#[export_name = "rewriteFloat32Array"]
-pub unsafe extern "C" fn rewrite_float32_array() {
-    let mut str = String::from("Rewriting...\n");
-    for (_i, elem) in FLOATS.iter_mut().enumerate() {
-        let val = math::random();
-        str += &format!("{val:.16}\n");
-        *elem = val;
+#[export_name = "f32Noise"]
+pub unsafe extern "C" fn f32_noise() {
+    let perf_zero = shim::now();
+    for elem in FLOATS.iter_mut() {
+        *elem = math::random();
     }
-    print(str, shim::info);
+    let time = shim::now() - perf_zero;
+    print(
+        format!(
+            "Filled {} element ({} s @ 44.1 kHz) f32 array with JS noise in {} ms (generation rate {} MHz, {} s/s)",
+            FLOATS.len(),
+            FLOATS.len() as f32 / 44100.0,
+            time,
+            FLOATS.len() as f32 / (1000.0 * time as f32),
+            FLOATS.len() as f32 / (44.1 * time as f32),
+        ),
+        shim::info,
+    );
 }
 
 #[export_name = "getInfo"]
