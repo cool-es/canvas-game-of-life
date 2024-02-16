@@ -114,10 +114,6 @@ function main(result) {
         lifeupdate();
     }
 
-
-    // rustwasm.toggleCell(uniX - 1, uniY / 2);
-    // rustwasm.toggleCell(uniX / 2, uniY - 1);
-
     window.handle = 0;
     let playing = false;
     window.play = () => {
@@ -156,9 +152,6 @@ function main(result) {
         }
     }
 
-
-    // window.tcell = (x, y) => { rustwasm.toggleCell(x, y); };
-
     window.runLife = () => {
         function lifecheck(str) {
             const a = viewUni();
@@ -167,15 +160,7 @@ function main(result) {
             console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / uniLen) / 10}%)`);
         }
 
-        // making a glider
-        // rustwasm.toggleCell(uni, 1, 0);
-        // rustwasm.toggleCell(uni, 2, 1);
-        // rustwasm.toggleCell(uni, 0, 2);
-        // rustwasm.toggleCell(uni, 1, 2);
-        // rustwasm.toggleCell(uni, 2, 2);
-
         // fill universe with white noise
-
         rustwasm.addNoiseToUniverse(0.3);
         lifecheck('Initial');
         lifeupdate();
