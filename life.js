@@ -72,6 +72,55 @@ function main(result) {
         return bufferCache.subarray(uniPtr, uniPtr + uniLen);
     }
 
+
+    const cv = document.getElementById("board");
+    const canvas2d = (cv).getContext("2d");
+
+    window.lifeupdate = () => {
+        canvas2d.clearRect(0, 0, cv.width, cv.height);
+        canvas2d.beginPath();
+        const a = viewUni();
+        const b = 0;
+        const w = 4;
+        for (let i = 0; i < uniX; i++) {
+            for (let j = 0; j < uniY; j++) {
+                if ((a[i + j * uniX] & 1) == 1) { canvas2d.rect(w + (b + w) * i, w + (b + w) * j, w, w); }
+            }
+        }
+        canvas2d.fillStyle = "white";
+        canvas2d.fill();
+    };
+
+    window.addGlider = () => {
+        let offsetX = Math.trunc((uniX - 4) * Math.random() + 2);
+        let offsetY = Math.trunc((uniY - 4) * Math.random() + 2);
+        let signX = Math.sign(Math.random() - 0.5);
+        let signY = Math.sign(Math.random() - 0.5);
+        rustwasm.toggleCell(offsetX + signX * 1, offsetY + signY * 0);
+        rustwasm.toggleCell(offsetX + signX * 2, offsetY + signY * 1);
+        rustwasm.toggleCell(offsetX + signX * 0, offsetY + signY * 2);
+        rustwasm.toggleCell(offsetX + signX * 1, offsetY + signY * 2);
+        rustwasm.toggleCell(offsetX + signX * 2, offsetY + signY * 2);
+        lifeupdate();
+    }
+
+    addGlider();
+    // rustwasm.toggleCell(uniX - 1, uniY / 2);
+    // rustwasm.toggleCell(uniX / 2, uniY - 1);
+
+    window.handle = 0;
+    window.play = () => {
+        if (handle == 0) {
+            handle = setInterval(() => {
+                rustwasm.tickUniverse();
+                lifeupdate();
+            }, 50);
+        } else {
+            clearInterval(handle);
+            handle = 0;
+        }
+    }
+
     // window.tcell = (x, y) => { rustwasm.toggleCell(x, y); };
 
     window.runLife = () => {
@@ -91,8 +140,9 @@ function main(result) {
 
         // fill universe with white noise
 
-        rustwasm.addNoiseToUniverse(0.7);
+        rustwasm.addNoiseToUniverse(0.3);
         lifecheck('Initial');
+        lifeupdate();
         perfZero = performance.now();
         const cycles = 10000;
         for (let i = 0; i < cycles; i++) {
@@ -101,14 +151,17 @@ function main(result) {
 
         console.log(`Simulated ${cycles} generations in ${performance.now() - perfZero}ms`);
         lifecheck('JS/WASM');
+        lifeupdate();
 
         rustwasm.addNoiseToUniverse(0.7);
         lifecheck('Initial');
+        lifeupdate();
         perfZero = performance.now();
         rustwasm.timeCrunch(cycles);
 
         console.log(`Crunched ${cycles} generations in ${performance.now() - perfZero}ms`);
         lifecheck('WASM');
+        lifeupdate();
     };
 }
 
