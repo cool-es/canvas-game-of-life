@@ -53,6 +53,10 @@ const functionImports = {
         log: len => {
             console.log(makeString(len));
         },
+
+        now: () => {
+            return performance.now();
+        }
     },
 };
 

@@ -32,6 +32,10 @@ pub mod import {
             pub fn error(len: usize);
             pub fn info(len: usize);
             pub fn log(len: usize);
+
+            // timer, seemingly inaccessible
+            // from wasm normally
+            pub fn now() -> i32;
         }
     }
 }
