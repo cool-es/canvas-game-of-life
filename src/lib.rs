@@ -112,8 +112,8 @@ pub unsafe extern "C" fn get_info(index: i32) -> i32 {
     match index {
         1 => &UNI as *const u8 as i32,
         10 => LENGTH as i32,
-        11 => HEIGHT as i32,
-        12 => WIDTH as i32,
+        11 => WIDTH as i32,
+        12 => HEIGHT as i32,
 
         2 => &TEXT as *const u8 as i32,
         20 => TEXT.len() as i32,

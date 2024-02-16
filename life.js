@@ -56,6 +56,9 @@ function main(result) {
 
     const uniPtr = rustwasm.getInfo(1);
     const uniLen = rustwasm.getInfo(10);
+    const uniX = rustwasm.getInfo(11);
+    const uniY = rustwasm.getInfo(12);
+
     stringPtr = rustwasm.getInfo(2);
     f32Ptr = rustwasm.getInfo(3);
     f32Len = rustwasm.getInfo(30);
