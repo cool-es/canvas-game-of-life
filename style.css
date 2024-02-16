@@ -1,3 +1,36 @@
 html {
     background-color: #335;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+canvas {
+    margin: 0.5em;
+    /* padding: 0.5em; */
+    /* background-color: #448; */
+}
+
+button {
+    padding: 1em;
+    margin: 0 0.5em;
+    font-weight: bold;
+}
+
+body {
+    text-align: center;
+    width: fit-content;
+}
+
+.flex {
+    /* margin-left: 0.5em;
+    margin-right: auto; */
+    display: flex;
+    margin: auto;
+}
+
+.flex>.b1 {
+    flex: 2;
+}
+
+.flex>.b2 {
+    flex: 1;
 }

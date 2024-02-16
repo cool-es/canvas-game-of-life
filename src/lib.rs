@@ -136,6 +136,13 @@ pub unsafe extern "C" fn add_noise_to_universe(density: f32) {
     }
 }
 
+#[export_name = "clearUniverse"]
+pub unsafe extern "C" fn clear_universe() {
+    for i in UNI.iter_mut() {
+        *i = 0;
+    }
+}
+
 #[export_name = "tickUniverse"]
 pub unsafe extern "C" fn tick_universe() {
     // encoding: last bits of u8

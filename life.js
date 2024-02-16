@@ -7,20 +7,14 @@ window.onload = function () {
         .catch(failure);
 };
 
+const niceDecoder = new TextDecoder;
 let bufferCache;
-let decoderCache;
 let stringPtr;
 let f32Ptr;
 let f32Len;
 
 function makeString(len) {
-    if (bufferCache === undefined) {
-        bufferCache = new Uint8Array(rustwasm.memory.buffer);
-    }
-    if (decoderCache === undefined) {
-        decoderCache = new TextDecoder;
-    }
-    return decoderCache.decode(bufferCache.subarray(stringPtr, stringPtr + len));
+    return niceDecoder.decode(bufferCache.subarray(stringPtr, stringPtr + len));
 }
 
 window.makeFloatArray = () => {
@@ -53,6 +47,7 @@ const functionImports = {
 function main(result) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
     window.rustwasm = result.instance.exports;
+    bufferCache = new Uint8Array(rustwasm.memory.buffer);
 
     const uniPtr = rustwasm.getInfo(1);
     const uniLen = rustwasm.getInfo(10);
@@ -65,28 +60,34 @@ function main(result) {
 
     window.maxStr = () => { return rustwasm.getInfo(21); }
 
-    window.viewUni = () => {
-        if (bufferCache === undefined) {
-            bufferCache = new Uint8Array(rustwasm.memory.buffer);
-        }
-        return bufferCache.subarray(uniPtr, uniPtr + uniLen);
+    const b = 1;
+    const w = 4;
+    const cv = document.getElementById("board");
+    cv.width = (b + w) * uniX;
+    cv.height = (b + w) * uniY;
+    const contols = document.getElementById("contols");
+    contols.style = `width: ${(b + w) * uniX}px;`;
+    const canvas2d = cv.getContext("2d");
+    for (const i of document.getElementsByClassName("life")) {
+        i.hidden = false;
     }
 
-
-    const cv = document.getElementById("board");
-    const canvas2d = (cv).getContext("2d");
-
+    const pb = document.getElementById('pb');
     window.lifeupdate = () => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
-        const a = viewUni();
-        const b = 0;
-        const w = 4;
+        let dead = true;
+        const a = bufferCache.subarray(uniPtr, uniPtr + uniLen);
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
-                if ((a[i + j * uniX] & 1) == 1) { canvas2d.rect(w + (b + w) * i, w + (b + w) * j, w, w); }
+                if ((a[i + j * uniX] & 1) == 1) {
+                    canvas2d.rect((b + w) * i, (b + w) * j, w, w);
+                    dead = false;
+                }
             }
         }
+        if (dead) { stopLife(); }
+        pb.disabled = dead;
         canvas2d.fillStyle = "white";
         canvas2d.fill();
     };
@@ -102,23 +103,49 @@ function main(result) {
         rustwasm.toggleCell(offsetX + signX * 1, offsetY + signY * 2);
         rustwasm.toggleCell(offsetX + signX * 2, offsetY + signY * 2);
         lifeupdate();
+    };
+
+    window.addNoise = (amt) => {
+        rustwasm.addNoiseToUniverse(amt);
+        lifeupdate();
+    }
+    window.clearUni = () => {
+        rustwasm.clearUniverse();
+        lifeupdate();
     }
 
-    addGlider();
+
     // rustwasm.toggleCell(uniX - 1, uniY / 2);
     // rustwasm.toggleCell(uniX / 2, uniY - 1);
 
     window.handle = 0;
+    let playing = false;
     window.play = () => {
+        if (playing) {
+            stopLife();
+        } else {
+            startLife();
+        }
+    }
+
+    function startLife() {
         if (handle == 0) {
             handle = setInterval(() => {
                 rustwasm.tickUniverse();
                 lifeupdate();
             }, 50);
-        } else {
+        }
+        playing = true;
+        pb.innerText = 'Pause';
+    }
+
+    function stopLife() {
+        if (handle != 0) {
             clearInterval(handle);
             handle = 0;
         }
+        playing = false;
+        pb.innerText = 'Play';
     }
 
     // window.tcell = (x, y) => { rustwasm.toggleCell(x, y); };
