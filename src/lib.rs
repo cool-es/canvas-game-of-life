@@ -165,7 +165,7 @@ pub unsafe extern "C" fn tick_universe() {
     let d = |ci: usize| ci + WIDTH;
     let l = |ci: usize| {
         if ci % WIDTH == 0 {
-            // left side; wrap to right side - möbius strip
+            // left side; wrap to right side - klein bottle
             (LENGTH - 1) - ci
         } else {
             ci - 1
@@ -173,7 +173,7 @@ pub unsafe extern "C" fn tick_universe() {
     };
     let r = |ci: usize| {
         if (ci + 1) % WIDTH == 0 {
-            // right side; wrap to left side - möbius strip
+            // right side; wrap to left side - klein bottle
             (LENGTH - 1) - ci
         } else {
             ci + 1
