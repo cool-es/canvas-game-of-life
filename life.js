@@ -63,8 +63,8 @@ function main(result) {
     const b = 1;
     const w = 4;
     const cv = document.getElementById("board");
-    cv.width = (b + w) * uniX;
-    cv.height = (b + w) * uniY;
+    cv.width = (b + w) * uniX - b + 2;
+    cv.height = (b + w) * uniY - b + 2;
     const contols = document.getElementById("contols");
     contols.style = `width: ${(b + w) * uniX}px;`;
     const canvas2d = cv.getContext("2d");
@@ -81,7 +81,7 @@ function main(result) {
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
                 if ((a[i + j * uniX] & 1) == 1) {
-                    canvas2d.rect((b + w) * i, (b + w) * j, w, w);
+                    canvas2d.rect(1 + (b + w) * i, 1 + (b + w) * j, w, w);
                     dead = false;
                 }
             }
