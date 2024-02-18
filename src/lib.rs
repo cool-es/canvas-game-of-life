@@ -35,7 +35,7 @@ pub mod import {
 }
 
 // 128×128 universe
-const WIDTH: usize = 2 << 7;
+const WIDTH: usize = 1 << 7;
 const HEIGHT: usize = WIDTH;
 const LENGTH: usize = WIDTH * HEIGHT;
 
@@ -44,13 +44,13 @@ const LENGTH: usize = WIDTH * HEIGHT;
 static mut UNI: [u8; LENGTH] = [0; LENGTH];
 
 // 512 characters
-static mut TEXT: [u8; 2 << 9] = [0; 2 << 9];
+static mut TEXT: [u8; 1 << 9] = [0; 1 << 9];
 // longest string received yet, to see how
 // long the string buffer might need to be
 static mut STR_MAX: usize = 0;
 
 // 16m samples (64 MB)
-static mut FLOATS: [f32; 2 << 24] = [0.0; 2 << 24];
+static mut FLOATS: [f32; 1 << 24] = [0.0; 1 << 24];
 
 // for use with the shim::error/info/log functions
 fn print<T>(msg: T, func: unsafe extern "C" fn(usize))
