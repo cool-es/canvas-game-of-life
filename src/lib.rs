@@ -44,13 +44,16 @@ const LENGTH: usize = WIDTH * HEIGHT;
 static mut UNI: [u8; LENGTH] = [0; LENGTH];
 
 // 512 characters
-static mut TEXT: [u8; 1 << 9] = [0; 1 << 9];
+const TEXTLEN: usize = 1 << 9;
+static mut TEXT: [u8; TEXTLEN] = [0; TEXTLEN];
+
 // longest string received yet, to see how
 // long the string buffer might need to be
 static mut STR_MAX: usize = 0;
 
 // 16m samples (64 MB)
-static mut FLOATS: [f32; 1 << 24] = [0.0; 1 << 24];
+const FLOATLEN: usize = 1 << 24;
+static mut FLOATS: [f32; FLOATLEN] = [0.0; FLOATLEN];
 
 // for use with the shim::error/info/log functions
 fn print<T>(msg: T, func: unsafe extern "C" fn(usize))
@@ -65,7 +68,7 @@ where
         for (a, b) in TEXT.iter_mut().zip(arr.iter()) {
             *a = *b;
         }
-        func(arr.len().min(TEXT.len()));
+        func(arr.len().min(TEXTLEN));
     }
 }
 
@@ -73,17 +76,17 @@ where
 pub unsafe extern "C" fn f32_sine() {
     let perf_zero = shim::now();
     for (i, elem) in FLOATS.iter_mut().enumerate() {
-        *elem = ((2.0 * std::f32::consts::PI * i as f32) / FLOATS.len() as f32).sin();
+        *elem = ((2.0 * std::f32::consts::PI * i as f32) / FLOATLEN as f32).sin();
     }
     let time = shim::now() - perf_zero;
     print(
         format!(
             "Filled {} element ({} s @ 44.1 kHz) f32 array with sine wave in {} ms (generation rate {} MHz, {} s/s)",
-            FLOATS.len(),
-            FLOATS.len() as f32 / 44100.0,
+            FLOATLEN,
+            FLOATLEN as f32 / 44100.0,
             time,
-            FLOATS.len() as f32 / (1000.0 * time as f32),
-            FLOATS.len() as f32 / (44.1 * time as f32),
+            FLOATLEN as f32 / (1000.0 * time as f32),
+            FLOATLEN as f32 / (44.1 * time as f32),
         ),
         shim::info,
     );
@@ -99,11 +102,11 @@ pub unsafe extern "C" fn f32_noise() {
     print(
         format!(
             "Filled {} element ({} s @ 44.1 kHz) f32 array with JS noise in {} ms (generation rate {} MHz, {} s/s)",
-            FLOATS.len(),
-            FLOATS.len() as f32 / 44100.0,
+            FLOATLEN,
+            FLOATLEN as f32 / 44100.0,
             time,
-            FLOATS.len() as f32 / (1000.0 * time as f32),
-            FLOATS.len() as f32 / (44.1 * time as f32),
+            FLOATLEN as f32 / (1000.0 * time as f32),
+            FLOATLEN as f32 / (44.1 * time as f32),
         ),
         shim::info,
     );
@@ -118,11 +121,11 @@ pub unsafe extern "C" fn get_info(index: i32) -> i32 {
         12 => HEIGHT as i32,
 
         2 => &TEXT as *const u8 as i32,
-        20 => TEXT.len() as i32,
+        20 => TEXTLEN as i32,
         21 => STR_MAX as i32,
 
         3 => &FLOATS as *const f32 as i32,
-        30 => FLOATS.len() as i32,
+        30 => FLOATLEN as i32,
 
         _ => -999,
     }
