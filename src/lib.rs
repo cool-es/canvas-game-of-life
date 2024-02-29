@@ -1,5 +1,4 @@
 use import::*;
-mod data;
 
 pub mod import {
     pub mod console {
@@ -53,10 +52,6 @@ static mut TEXT: [u8; TEXTLEN] = [0; TEXTLEN];
 // long the string buffer might need to be
 static mut STR_MAX: usize = 0;
 
-// 16m samples (64 MB)
-const FLOATLEN: usize = 1 << 24;
-static mut FLOATS: [f32; FLOATLEN] = [0.0; FLOATLEN];
-
 // for use with the shim::error/info/log functions
 fn print<T>(msg: T, func: unsafe extern "C" fn(usize))
 where
@@ -74,48 +69,6 @@ where
     }
 }
 
-#[export_name = "f32Sine"]
-pub unsafe extern "C" fn f32_sine() {
-    let perf_zero = shim::now();
-    for (i, elem) in FLOATS.iter_mut().enumerate() {
-        *elem = ((2.0 * std::f32::consts::PI * i as f32) / FLOATLEN as f32).sin();
-    }
-    let time = shim::now() - perf_zero;
-    f32_info(time, "sine wave");
-}
-
-#[export_name = "f32Noise"]
-pub unsafe extern "C" fn f32_noise() {
-    let perf_zero = shim::now();
-    for elem in FLOATS.iter_mut() {
-        *elem = math::random();
-    }
-    let time = shim::now() - perf_zero;
-    f32_info(time, "JS noise");
-}
-
-#[export_name = "f32LookupTable"]
-pub unsafe extern "C" fn f32_lookup_table() {
-    let perf_zero = shim::now();
-    for (i, elem) in FLOATS.iter_mut().enumerate() {
-        *elem = data::sin_lut(i);
-    }
-    let time = shim::now() - perf_zero;
-    f32_info(time, "LUT data");
-}
-
-fn f32_info(time: i32, sting: &str) {
-    print(
-        format!(
-            "Filled {FLOATLEN} element ({} s @ 44.1 kHz) f32 array with {sting} in {time} ms (generation rate {} MHz, {} s/s)",
-            FLOATLEN as f32 / 44100.0,
-            FLOATLEN as f32 / (1000.0 * time as f32),
-            FLOATLEN as f32 / (44.1 * time as f32),
-        ),
-        shim::info,
-    );
-}
-
 #[export_name = "getInfo"]
 pub unsafe extern "C" fn get_info(index: i32) -> i32 {
     match index {
@@ -127,9 +80,6 @@ pub unsafe extern "C" fn get_info(index: i32) -> i32 {
         2 => &TEXT as *const u8 as i32,
         20 => TEXTLEN as i32,
         21 => STR_MAX as i32,
-
-        3 => &FLOATS as *const f32 as i32,
-        30 => FLOATLEN as i32,
 
         _ => -999,
     }

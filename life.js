@@ -9,10 +9,7 @@ window.onload = function () {
 
 const niceDecoder = new TextDecoder;
 let uint8Cache;
-let float32Cache;
 let stringPtr;
-let f32Ptr;
-let f32Len;
 
 function makeString(len) {
     if (uint8Cache.buffer.detached) {
@@ -22,15 +19,6 @@ function makeString(len) {
     return niceDecoder.decode(uint8Cache.subarray(stringPtr, stringPtr + len));
 }
 
-window.makeFloatArray = () => {
-    if (float32Cache.buffer.detached) {
-        console.warn("makefloatarray: buffer detached, renewing...");
-        float32Cache = new Float32Array(rustwasm.memory.buffer);
-    }
-    return Array.from(
-        float32Cache.subarray((f32Ptr / 4), f32Ptr / 4 + f32Len)
-    );
-}
 
 const functionImports = {
     console: console,
@@ -61,7 +49,6 @@ function main(result) {
     window.rustwasm = result.instance.exports;
 
     uint8Cache = new Uint8Array(rustwasm.memory.buffer);
-    float32Cache = new Float32Array(rustwasm.memory.buffer);
 
     const uniPtr = rustwasm.getInfo(1);
     const uniLen = rustwasm.getInfo(10);
@@ -69,8 +56,6 @@ function main(result) {
     const uniY = rustwasm.getInfo(12);
 
     stringPtr = rustwasm.getInfo(2);
-    f32Ptr = rustwasm.getInfo(3);
-    f32Len = rustwasm.getInfo(30);
 
     window.maxStr = () => { return rustwasm.getInfo(21); }
 
