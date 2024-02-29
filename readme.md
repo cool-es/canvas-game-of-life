@@ -1,0 +1,1 @@
+Simple web demo of Conway's Game of Life running in Rust WASM.
