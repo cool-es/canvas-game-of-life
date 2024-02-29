@@ -26,6 +26,7 @@ pub mod import {
             pub fn error(len: usize);
             pub fn info(len: usize);
             pub fn log(len: usize);
+            pub fn warn(len: usize);
 
             // timer, seemingly inaccessible
             // from wasm normally

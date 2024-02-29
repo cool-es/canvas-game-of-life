@@ -46,6 +46,9 @@ const functionImports = {
         log: len => {
             console.log(makeString(len));
         },
+        warn: len => {
+            console.warn(makeString(len));
+        },
 
         now: () => {
             return performance.now();
