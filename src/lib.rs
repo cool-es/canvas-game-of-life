@@ -80,17 +80,7 @@ pub unsafe extern "C" fn f32_sine() {
         *elem = ((2.0 * std::f32::consts::PI * i as f32) / FLOATLEN as f32).sin();
     }
     let time = shim::now() - perf_zero;
-    print(
-        format!(
-            "Filled {} element ({} s @ 44.1 kHz) f32 array with sine wave in {} ms (generation rate {} MHz, {} s/s)",
-            FLOATLEN,
-            FLOATLEN as f32 / 44100.0,
-            time,
-            FLOATLEN as f32 / (1000.0 * time as f32),
-            FLOATLEN as f32 / (44.1 * time as f32),
-        ),
-        shim::info,
-    );
+    f32_info(time, "sine wave");
 }
 
 #[export_name = "f32Noise"]
@@ -100,12 +90,14 @@ pub unsafe extern "C" fn f32_noise() {
         *elem = math::random();
     }
     let time = shim::now() - perf_zero;
+    f32_info(time, "JS noise");
+}
+
+fn f32_info(time: i32, sting: &str) {
     print(
         format!(
-            "Filled {} element ({} s @ 44.1 kHz) f32 array with JS noise in {} ms (generation rate {} MHz, {} s/s)",
-            FLOATLEN,
+            "Filled {FLOATLEN} element ({} s @ 44.1 kHz) f32 array with {sting} in {time} ms (generation rate {} MHz, {} s/s)",
             FLOATLEN as f32 / 44100.0,
-            time,
             FLOATLEN as f32 / (1000.0 * time as f32),
             FLOATLEN as f32 / (44.1 * time as f32),
         ),
