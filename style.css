@@ -9,6 +9,14 @@ canvas {
     /* background-color: #448; */
 }
 
+a {
+    margin: 2em;
+    color: white;
+    text-decoration: none;
+    font-weight: lighter;
+    font-size: 0.7em;
+}
+
 button {
     padding: 1em;
     margin: 0 0.5em;

@@ -1,4 +1,5 @@
-## Simple web demo of Conway's Game of Life running in JS + Rust/WASM
+# Conway's Game of Life in JS + Rust/WASM 
+<a href="https://cool-es.github.io/canvas-game-of-life/" style="font-size:3em; font-weight:bold; ">😮 <i>See it live here!</i></a>
 
 No binding generators are used; all code is hand-written.
 
