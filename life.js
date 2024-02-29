@@ -8,13 +8,17 @@ window.onload = function () {
 };
 
 const niceDecoder = new TextDecoder;
-let bufferCache;
+let uint8Cache;
 let stringPtr;
 let f32Ptr;
 let f32Len;
 
 function makeString(len) {
-    return niceDecoder.decode(bufferCache.subarray(stringPtr, stringPtr + len));
+    if (uint8Cache.buffer.detached) {
+        console.warn("makestring: buffer detached, renewing...");
+        uint8Cache = new Uint8Array(rustwasm.memory.buffer);
+    }
+    return niceDecoder.decode(uint8Cache.subarray(stringPtr, stringPtr + len));
 }
 
 window.makeFloatArray = () => {
@@ -47,7 +51,7 @@ const functionImports = {
 function main(result) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
     window.rustwasm = result.instance.exports;
-    bufferCache = new Uint8Array(rustwasm.memory.buffer);
+    uint8Cache = new Uint8Array(rustwasm.memory.buffer);
 
     const uniPtr = rustwasm.getInfo(1);
     const uniLen = rustwasm.getInfo(10);
@@ -77,7 +81,12 @@ function main(result) {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
         let dead = true;
-        const a = bufferCache.subarray(uniPtr, uniPtr + uniLen);
+        if (uint8Cache.buffer.detached) {
+            console.warn("lifeupdate: buffer detached, renewing...");
+            uint8Cache = new Uint8Array(rustwasm.memory.buffer);
+        }
+        const a =
+            uint8Cache.subarray(uniPtr, uniPtr + uniLen);
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
                 if ((a[i + j * uniX] & 1) == 1) {
