@@ -205,4 +205,4 @@ function main(result) {
     };
 }
 
-function failure(error) { console.error(error); (document.getElementsByTagName('body'))[0].innerText = 'Parse error – unable to load WASM module!'; }
+function failure(error) { console.error(error); (document.getElementsByTagName('body'))[0].innerText = 'Parse error - unable to load WASM module!'; }
