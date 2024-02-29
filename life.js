@@ -9,6 +9,7 @@ window.onload = function () {
 
 const niceDecoder = new TextDecoder;
 let uint8Cache;
+let float32Cache;
 let stringPtr;
 let f32Ptr;
 let f32Len;
@@ -22,8 +23,12 @@ function makeString(len) {
 }
 
 window.makeFloatArray = () => {
+    if (float32Cache.buffer.detached) {
+        console.warn("makefloatarray: buffer detached, renewing...");
+        float32Cache = new Float32Array(rustwasm.memory.buffer);
+    }
     return Array.from(
-        new Float32Array(rustwasm.memory.buffer).subarray((f32Ptr / 4), f32Ptr / 4 + f32Len)
+        float32Cache.subarray((f32Ptr / 4), f32Ptr / 4 + f32Len)
     );
 }
 
@@ -51,7 +56,9 @@ const functionImports = {
 function main(result) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
     window.rustwasm = result.instance.exports;
+
     uint8Cache = new Uint8Array(rustwasm.memory.buffer);
+    float32Cache = new Float32Array(rustwasm.memory.buffer);
 
     const uniPtr = rustwasm.getInfo(1);
     const uniLen = rustwasm.getInfo(10);
