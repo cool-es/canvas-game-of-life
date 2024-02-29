@@ -1,4 +1,5 @@
 use import::*;
+mod data;
 
 pub mod import {
     pub mod console {
@@ -91,6 +92,16 @@ pub unsafe extern "C" fn f32_noise() {
     }
     let time = shim::now() - perf_zero;
     f32_info(time, "JS noise");
+}
+
+#[export_name = "f32LookupTable"]
+pub unsafe extern "C" fn f32_lookup_table() {
+    let perf_zero = shim::now();
+    for (i, elem) in FLOATS.iter_mut().enumerate() {
+        *elem = data::sin_lut(i);
+    }
+    let time = shim::now() - perf_zero;
+    f32_info(time, "LUT data");
 }
 
 fn f32_info(time: i32, sting: &str) {
