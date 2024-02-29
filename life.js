@@ -1,4 +1,4 @@
-import { wasmName } from './wasmname.js';
+let wasmName = "demo.wasm";
 let perfZero = performance.now();
 
 window.onload = function () {
