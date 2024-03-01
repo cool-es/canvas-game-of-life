@@ -4,4 +4,4 @@ version = 3
 
 [[package]]
 name = "canvas-game-of-life"
-version = "0.1.0-proto"
+version = "0.1.0-demo"
