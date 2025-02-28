@@ -140,19 +140,20 @@ pub unsafe extern "C" fn tick_universe() {
 
     for index in 0..LENGTH {
         // sum of previous-generation neighbors
-        let sum = [
-            UNI[u(index) % LENGTH],
-            UNI[d(index) % LENGTH],
-            UNI[l(index) % LENGTH],
-            UNI[r(index) % LENGTH],
-            UNI[u(l(index)) % LENGTH],
-            UNI[d(l(index)) % LENGTH],
-            UNI[u(r(index)) % LENGTH],
-            UNI[d(r(index)) % LENGTH],
-        ]
-        .into_iter()
-        .sum::<u8>()
+        let sum = (UNI[u(index) % LENGTH]
+            + UNI[d(index) % LENGTH]
+            + UNI[l(index) % LENGTH]
+            + UNI[r(index) % LENGTH]
+            + UNI[u(l(index)) % LENGTH]
+            + UNI[d(l(index)) % LENGTH]
+            + UNI[u(r(index)) % LENGTH]
+            + UNI[d(r(index)) % LENGTH])
             >> 4;
+
+        // simple speed optimization
+        if ![2, 3].contains(&sum) {
+            continue;
+        }
 
         if UNI[index] == 1 << 4 {
             // cell was alive when tick began
