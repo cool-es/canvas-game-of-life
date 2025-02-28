@@ -59,13 +59,14 @@ where
 {
     unsafe {
         let arr = msg.as_ref();
-        if arr.len() > STR_MAX {
-            STR_MAX = arr.len();
+        let len = arr.len().min(TEXTLEN);
+        if len > STR_MAX {
+            STR_MAX = len;
         }
         for (a, b) in TEXT.iter_mut().zip(arr.iter()) {
             *a = *b;
         }
-        func(arr.len().min(TEXTLEN));
+        func(len);
     }
 }
 
