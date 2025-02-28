@@ -36,9 +36,9 @@ pub mod import {
     }
 }
 
-// 128×128 universe
-const WIDTH: usize = 1 << 7;
-const HEIGHT: usize = WIDTH;
+// 256×128 universe
+const WIDTH: usize = 1 << 8;
+const HEIGHT: usize = 1 << 7;
 const LENGTH: usize = WIDTH * HEIGHT;
 
 // no need to worry about use of mut statics,
