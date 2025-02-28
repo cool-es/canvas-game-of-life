@@ -72,12 +72,12 @@ where
 #[export_name = "getInfo"]
 pub unsafe extern "C" fn get_info(index: i32) -> i32 {
     match index {
-        1 => &UNI as *const u8 as i32,
+        1 => &raw const UNI as *const u8 as i32,
         10 => LENGTH as i32,
         11 => WIDTH as i32,
         12 => HEIGHT as i32,
 
-        2 => &TEXT as *const u8 as i32,
+        2 => &raw const TEXT as *const u8 as i32,
         20 => TEXTLEN as i32,
         21 => STR_MAX as i32,
 
