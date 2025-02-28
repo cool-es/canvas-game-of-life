@@ -93,9 +93,7 @@ pub unsafe extern "C" fn add_noise_to_universe(density: f32) {
 
     let mut rng = Rand32::new(math::random().to_bits() as u64);
     for i in UNI.iter_mut() {
-        if rng.rand_float() < density {
-            *i ^= 1;
-        }
+        *i ^= u8::from(rng.rand_float() < density);
     }
 }
 
