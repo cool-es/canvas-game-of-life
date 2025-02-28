@@ -1,4 +1,5 @@
 use import::*;
+use oorandom::Rand32;
 
 pub mod import {
     pub mod console {
@@ -89,8 +90,10 @@ pub unsafe extern "C" fn get_info(index: i32) -> i32 {
 #[export_name = "addNoiseToUniverse"]
 pub unsafe extern "C" fn add_noise_to_universe(density: f32) {
     print("*pssshhhh*", shim::info);
+
+    let mut rng = Rand32::new(math::random().to_bits() as u64);
     for i in UNI.iter_mut() {
-        if math::random() < density {
+        if rng.rand_float() < density {
             *i ^= 1;
         }
     }
