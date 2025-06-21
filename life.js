@@ -59,13 +59,13 @@ function main(result) {
 
     window.maxStr = () => { return rustwasm.getInfo(21); }
 
-    const b = 1;
-    const w = 4;
+    const cellGap = 1;
+    const cellWidth = 4;
     const cv = document.getElementById("board");
-    cv.width = (b + w) * uniX - b + 2;
-    cv.height = (b + w) * uniY - b + 2;
+    cv.width = (cellGap + cellWidth) * uniX - cellGap + 2;
+    cv.height = (cellGap + cellWidth) * uniY - cellGap + 2;
     const contols = document.getElementById("contols");
-    contols.style = `width: ${(b + w) * uniX}px;`;
+    contols.style = `width: ${(cellGap + cellWidth) * uniX}px;`;
     const canvas2d = cv.getContext("2d");
     for (const i of document.getElementsByClassName("life")) {
         i.hidden = false;
@@ -85,7 +85,7 @@ function main(result) {
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
                 if ((a[i + j * uniX] & 1) == 1) {
-                    canvas2d.rect(1 + (b + w) * i, 1 + (b + w) * j, w, w);
+                    canvas2d.rect(1 + (cellGap + cellWidth) * i, 1 + (cellGap + cellWidth) * j, cellWidth, cellWidth);
                     dead = false;
                 }
             }
