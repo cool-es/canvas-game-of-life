@@ -1,3 +1,4 @@
+#![allow(static_mut_refs)]
 use import::*;
 
 pub mod import {
