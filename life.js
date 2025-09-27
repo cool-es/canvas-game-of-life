@@ -2,7 +2,29 @@ let wasmName = "demo.wasm";
 let perfZero = performance.now();
 
 window.onload = function () {
-    WebAssembly.instantiateStreaming(fetch(wasmName), functionImports)
+    WebAssembly.instantiateStreaming(fetch(wasmName), {
+        console: console,
+        math: Math,
+        window: window,
+        shim: {
+            error: len => {
+                console.error(makeString(len));
+            },
+            info: len => {
+                console.info(makeString(len));
+            },
+            log: len => {
+                console.log(makeString(len));
+            },
+            warn: len => {
+                console.warn(makeString(len));
+            },
+
+            now: () => {
+                return performance.now();
+            }
+        },
+    })
         .then(main)
         .catch(failure);
 };
@@ -18,31 +40,6 @@ function makeString(len) {
     }
     return niceDecoder.decode(uint8Cache.subarray(stringPtr, stringPtr + len));
 }
-
-
-const functionImports = {
-    console: console,
-    math: Math,
-    window: window,
-    shim: {
-        error: len => {
-            console.error(makeString(len));
-        },
-        info: len => {
-            console.info(makeString(len));
-        },
-        log: len => {
-            console.log(makeString(len));
-        },
-        warn: len => {
-            console.warn(makeString(len));
-        },
-
-        now: () => {
-            return performance.now();
-        }
-    },
-};
 
 function main(result) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
