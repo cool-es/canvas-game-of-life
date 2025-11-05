@@ -82,7 +82,7 @@ impl DataBuf {
         let u = |ci: usize| ci + (LENGTH - WIDTH);
         let d = |ci: usize| ci + WIDTH;
         let l = |ci: usize| {
-            if ci % WIDTH == 0 {
+            if ci.is_multiple_of(WIDTH) {
                 // left side; wrap to right side - klein bottle
                 (LENGTH - 1) - ci
             } else {
@@ -90,7 +90,7 @@ impl DataBuf {
             }
         };
         let r = |ci: usize| {
-            if (ci + 1) % WIDTH == 0 {
+            if (ci + 1).is_multiple_of(WIDTH) {
                 // right side; wrap to left side - klein bottle
                 (LENGTH - 1) - ci
             } else {
@@ -126,17 +126,12 @@ impl DataBuf {
                     // lowest bit left blank
                     _ => {}
                 }
-            } else {
+            } else if sum == 3 {
                 // cell was empty when tick began
-                match sum {
-                    // 3 neighbors: cell is born
-                    // set lowest bit ("alive in next gen")
-                    3 => self.cells[index] ^= 1,
-
-                    // otherwise nothing happens
-                    // lowest bit left blank
-                    _ => {}
-                }
+                // 3 neighbors: cell is born
+                // set lowest bit ("alive in next gen")
+                // otherwise nothing happens, lowest bit left blank
+                self.cells[index] ^= 1
             }
         }
     }
