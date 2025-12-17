@@ -131,11 +131,12 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         let offsetY = Math.trunc((uniY - 4) * Math.random() + 2);
         let signX = Math.sign(Math.random() - 0.5);
         let signY = Math.sign(Math.random() - 0.5);
-        window.rustwasm.toggleCell(offsetX + signX * 1, offsetY + signY * 0);
-        window.rustwasm.toggleCell(offsetX + signX * 2, offsetY + signY * 1);
-        window.rustwasm.toggleCell(offsetX + signX * 0, offsetY + signY * 2);
-        window.rustwasm.toggleCell(offsetX + signX * 1, offsetY + signY * 2);
-        window.rustwasm.toggleCell(offsetX + signX * 2, offsetY + signY * 2);
+
+        for (let i = 0; i < 5; i++) {
+            let [a, b] = [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]][i];
+            window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
+        }
+
         window.lifeupdate();
     };
 
