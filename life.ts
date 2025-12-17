@@ -1,5 +1,44 @@
 let wasmName = "demo.wasm";
 let perfZero = performance.now();
+
+declare global {
+    interface Window {
+        addGlider: () => void;
+        addNoise: (amt: number) => void;
+        clearUni: () => void;
+        handle: number;
+        lifeupdate: () => void;
+        maxStr: () => number;
+        play: () => void;
+        runLife: () => void;
+        rustwasm: WasmExports;
+    }
+}
+
+interface WasmExports {
+    addNoiseToUniverse: (density: number) => void;
+    clearUniverse: () => void;
+    getInfo: (index: number) => number;
+    memory: WebAssembly.Memory;
+    tickUniverse: () => void;
+    timeCrunch: (gens: number) => void;
+    toggleCell: (x: number, y: number) => void;
+}
+
+interface WasmImports {
+    console: typeof console;
+    math: typeof Math;
+    window: typeof window;
+    shim: {
+        error: (len: number) => void;
+        info: (len: number) => void;
+        log: (len: number) => void;
+        warn: (len: number) => void;
+        now: () => number;
+    };
+    [key: string]: any;
+}
+
 window.onload = function () {
     WebAssembly.instantiateStreaming(fetch(wasmName), {
         console: console,
@@ -18,52 +57,63 @@ window.onload = function () {
             warn: len => {
                 console.warn(makeString(len));
             },
+
             now: () => {
                 return performance.now();
             }
         },
-    })
+    } as WasmImports)
         .then(main)
         .catch(failure);
 };
+
 const niceDecoder = new TextDecoder;
-let uint8Cache;
-let stringPtr;
-function makeString(len) {
+let uint8Cache: Uint8Array<ArrayBuffer>;
+let stringPtr: number;
+
+function makeString(len: number) {
     if (uint8Cache.buffer.detached) {
         console.warn("makestring: buffer detached, renewing...");
         uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
     }
     return niceDecoder.decode(uint8Cache.subarray(stringPtr, stringPtr + len));
 }
-function main(result) {
+
+function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
-    window.rustwasm = result.instance.exports;
+    window.rustwasm = result.instance.exports as unknown as WasmExports;
+
     uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
+
     const uniPtr = window.rustwasm.getInfo(1);
     const uniLen = window.rustwasm.getInfo(10);
     const uniX = window.rustwasm.getInfo(11);
     const uniY = window.rustwasm.getInfo(12);
+
     stringPtr = window.rustwasm.getInfo(2);
-    window.maxStr = () => { return window.rustwasm.getInfo(21); };
+
+    window.maxStr = () => { return window.rustwasm.getInfo(21); }
+
     const cellGap = 1;
     const cellWidth = 4;
-    const cv = document.getElementById("board");
-    if (!cv)
-        throw new Error("Canvas element not found!");
+
+    const cv = document.getElementById("board") as HTMLCanvasElement;
+    if (!cv) throw new Error("Canvas element not found!");
     cv.width = (cellGap + cellWidth) * uniX - cellGap + 2;
     cv.height = (cellGap + cellWidth) * uniY - cellGap + 2;
+
     const contols = document.getElementById("contols");
-    if (!contols)
-        throw new Error("Canvas element not found!");
+    if (!contols) throw new Error("Canvas element not found!");
     contols.style = `width: ${(cellGap + cellWidth) * uniX}px;`;
+
     const canvas2d = cv.getContext("2d");
-    if (!canvas2d)
-        throw new Error("Canvas element not found!");
+    if (!canvas2d) throw new Error("Canvas element not found!");
+
     for (const i of document.getElementsByClassName("life")) {
-        i.hidden = false;
+        (i as HTMLElement).hidden = false;
     }
-    const pb = document.getElementById('pb');
+
+    const pb = document.getElementById('pb') as HTMLButtonElement;
     window.lifeupdate = () => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
@@ -72,7 +122,8 @@ function main(result) {
             console.warn("lifeupdate: buffer detached, renewing...");
             uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
         }
-        const a = uint8Cache.subarray(uniPtr, uniPtr + uniLen);
+        const a =
+            uint8Cache.subarray(uniPtr, uniPtr + uniLen);
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
                 if ((a[i + j * uniX] & 1) == 1) {
@@ -81,13 +132,12 @@ function main(result) {
                 }
             }
         }
-        if (dead) {
-            stopLife();
-        }
+        if (dead) { stopLife(); }
         pb.disabled = dead;
         canvas2d.fillStyle = "white";
         canvas2d.fill();
     };
+
     window.addGlider = () => {
         let offsetX = Math.trunc((uniX - 4) * Math.random() + 2);
         let offsetY = Math.trunc((uniY - 4) * Math.random() + 2);
@@ -100,59 +150,62 @@ function main(result) {
         window.rustwasm.toggleCell(offsetX + signX * 2, offsetY + signY * 2);
         window.lifeupdate();
     };
+
     window.addNoise = (amt) => {
         window.rustwasm.addNoiseToUniverse(amt);
         window.lifeupdate();
-    };
+    }
     window.clearUni = () => {
         window.rustwasm.clearUniverse();
         window.lifeupdate();
-    };
+    }
+
     window.handle = 0;
     let playing = false;
     window.play = () => {
         if (playing) {
             stopLife();
-        }
-        else {
+        } else {
             startLife();
         }
-    };
+    }
+
     function startLife() {
         playing = true;
         pb.innerText = 'Pause';
         requestAnimationFrame(startLoop);
     }
+
     function stopLife() {
         playing = false;
         pb.innerText = 'Play';
     }
+
     let zero;
-    function startLoop(timestamp) {
+    function startLoop(timestamp: number) {
         zero = timestamp;
         requestAnimationFrame(loopLoop);
     }
-    function loopLoop(timestamp) {
+
+    function loopLoop(timestamp: number) {
         if (timestamp - zero > 50) {
-            window.rustwasm.tickUniverse();
+            window.rustwasm.tickUniverse()
             window.lifeupdate();
             zero = timestamp;
         }
         if (playing) {
-            requestAnimationFrame((t) => { loopLoop(t); });
+            requestAnimationFrame((t) => { loopLoop(t) });
         }
     }
+
     window.runLife = () => {
-        function lifecheck(str) {
+        function lifecheck(str: string) {
             const a = uint8Cache.subarray(uniPtr, uniPtr + uniLen);
             let count = 0;
-            for (const i in a) {
-                if ((a[i] & 1) == 1) {
-                    count++;
-                }
-            }
+            for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
             console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / uniLen) / 10}%)`);
         }
+
         // fill universe with white noise
         window.rustwasm.addNoiseToUniverse(0.3);
         lifecheck('Initial');
@@ -162,18 +215,23 @@ function main(result) {
         for (let i = 0; i < cycles; i++) {
             window.rustwasm.tickUniverse();
         }
+
         console.log(`Simulated ${cycles} generations in ${performance.now() - perfZero}ms`);
         lifecheck('JS/WASM');
         window.lifeupdate();
+
         window.rustwasm.addNoiseToUniverse(0.7);
         lifecheck('Initial');
         window.lifeupdate();
         perfZero = performance.now();
         window.rustwasm.timeCrunch(cycles);
+
         console.log(`Crunched ${cycles} generations in ${performance.now() - perfZero}ms`);
         lifecheck('WASM');
         window.lifeupdate();
     };
 }
-function failure(error) { console.error(error); (document.getElementsByTagName('body'))[0].innerText = 'Parse error - unable to load WASM module!'; }
-export {};
+
+function failure(error: string) { console.error(error); (document.getElementsByTagName('body'))[0].innerText = 'Parse error - unable to load WASM module!'; }
+
+export { };

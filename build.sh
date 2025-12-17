@@ -2,3 +2,6 @@
 # Requires binaryen
 cargo build -r
 wasm-opt -O3 -o demo.wasm target/wasm32-unknown-unknown/release/life.wasm
+
+# compile typescript file
+tsc
