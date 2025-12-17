@@ -172,17 +172,17 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         pb.innerText = 'Play';
     }
 
-    let zero: number;
+    let t_zero: number;
     function startLoop(timestamp: number): void {
-        zero = timestamp;
+        t_zero = timestamp;
         requestAnimationFrame(loopLoop);
     }
 
     function loopLoop(timestamp: number): void {
-        if (timestamp - zero > 50) {
+        if (timestamp - t_zero > 50) {
             window.rustwasm.tickUniverse()
             window.lifeupdate();
-            zero = timestamp;
+            t_zero = timestamp;
         }
         if (playing) {
             requestAnimationFrame(t => { loopLoop(t) });

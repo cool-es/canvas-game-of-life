@@ -110,16 +110,16 @@ function main(result) {
         playing = false;
         pb.innerText = 'Play';
     }
-    let zero;
+    let t_zero;
     function startLoop(timestamp) {
-        zero = timestamp;
+        t_zero = timestamp;
         requestAnimationFrame(loopLoop);
     }
     function loopLoop(timestamp) {
-        if (timestamp - zero > 50) {
+        if (timestamp - t_zero > 50) {
             window.rustwasm.tickUniverse();
             window.lifeupdate();
-            zero = timestamp;
+            t_zero = timestamp;
         }
         if (playing) {
             requestAnimationFrame(t => { loopLoop(t); });
