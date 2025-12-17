@@ -94,6 +94,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
     const canvas2d = cv.getContext("2d") as CanvasRenderingContext2D;
 
+    // unhide page elements on successful page load (hidden by default)
     for (const i of document.getElementsByClassName("life")) {
         (i as HTMLElement).hidden = false;
     }
