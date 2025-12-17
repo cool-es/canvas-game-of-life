@@ -122,8 +122,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
             console.warn("lifeupdate: buffer detached, renewing...");
             uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
         }
-        const a =
-            uint8Cache.subarray(uniPtr, uniPtr + uniLen);
+        const a = uint8Cache.subarray(uniPtr, uniPtr + uniLen);
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
                 if ((a[i + j * uniX] & 1) == 1) {
@@ -194,7 +193,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
             zero = timestamp;
         }
         if (playing) {
-            requestAnimationFrame((t) => { loopLoop(t) });
+            requestAnimationFrame(t => { loopLoop(t) });
         }
     }
 
@@ -232,6 +231,11 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     };
 }
 
-function failure(error: string) { console.error(error); (document.getElementsByTagName('body'))[0].innerText = 'Parse error - unable to load WASM module!'; }
+// on failure
+function failure(error: string) {
+    console.error(error);
+    (document.getElementsByTagName('body'))[0]
+        .innerText = 'Parse error - unable to load WASM module!';
+}
 
 export { };

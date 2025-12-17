@@ -175,5 +175,10 @@ function main(result) {
         window.lifeupdate();
     };
 }
-function failure(error) { console.error(error); (document.getElementsByTagName('body'))[0].innerText = 'Parse error - unable to load WASM module!'; }
+// on failure
+function failure(error) {
+    console.error(error);
+    (document.getElementsByTagName('body'))[0]
+        .innerText = 'Parse error - unable to load WASM module!';
+}
 export {};
