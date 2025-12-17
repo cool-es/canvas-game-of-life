@@ -87,16 +87,13 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     const cellWidth: number = 4;
 
     const cv = document.getElementById("board") as HTMLCanvasElement;
-    if (!cv) throw new Error("Canvas element not found!");
     cv.width = (cellGap + cellWidth) * uniX - cellGap + 2;
     cv.height = (cellGap + cellWidth) * uniY - cellGap + 2;
 
-    const contols = document.getElementById("contols");
-    if (!contols) throw new Error("Canvas element not found!");
+    const contols = document.getElementById("contols") as HTMLElement;
     contols.style = `width: ${(cellGap + cellWidth) * uniX}px;`;
 
-    const canvas2d = cv.getContext("2d");
-    if (!canvas2d) throw new Error("Canvas element not found!");
+    const canvas2d = cv.getContext("2d") as CanvasRenderingContext2D;
 
     for (const i of document.getElementsByClassName("life")) {
         (i as HTMLElement).hidden = false;
