@@ -129,16 +129,19 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     };
 
     window.addGlider = (): void => {
+        // find where and how to draw the glider
         let offsetX: number = Math.trunc((uniX - 4) * Math.random() + 2);
         let offsetY: number = Math.trunc((uniY - 4) * Math.random() + 2);
         let signX: number = Math.sign(Math.random() - 0.5);
         let signY: number = Math.sign(Math.random() - 0.5);
 
+        // draw the glider's pixels
         for (let i = 0; i < 5; i++) {
             let [a, b] = [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]][i];
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
 
+        // refresh the view
         window.lifeupdate();
     };
 
