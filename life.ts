@@ -159,14 +159,10 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         if (playing) {
             stopLife();
         } else {
-            startLife();
+            playing = true;
+            pb.innerText = 'Pause';
+            requestAnimationFrame(startLoop);
         }
-    }
-
-    function startLife(): void {
-        playing = true;
-        pb.innerText = 'Pause';
-        requestAnimationFrame(startLoop);
     }
 
     function stopLife(): void {
