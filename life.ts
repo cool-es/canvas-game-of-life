@@ -1,5 +1,5 @@
-let wasmName = "demo.wasm";
-let perfZero = performance.now();
+let wasmName: string = "demo.wasm";
+let perfZero: number = performance.now();
 
 declare global {
     interface Window {
