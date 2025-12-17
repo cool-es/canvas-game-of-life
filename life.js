@@ -51,7 +51,7 @@ function main(result) {
     window.lifeupdate = () => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
-        let dead = true;
+        let popcount = 0;
         if (uint8Cache.buffer.detached) {
             console.warn("lifeupdate: buffer detached, renewing...");
             uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
@@ -61,16 +61,17 @@ function main(result) {
             for (let j = 0; j < uniY; j++) {
                 if ((a[i + j * uniX] & 1) == 1) {
                     canvas2d.rect(1 + (cellGap + cellWidth) * i, 1 + (cellGap + cellWidth) * j, cellWidth, cellWidth);
-                    dead = false;
+                    popcount++;
                 }
             }
         }
-        if (dead) {
+        if (popcount == 0) {
             stopLife();
         }
-        pb.disabled = dead;
+        pb.disabled = popcount == 0;
         canvas2d.fillStyle = "white";
         canvas2d.fill();
+        return popcount;
     };
     window.addGlider = () => {
         let offsetX = Math.trunc((uniX - 4) * Math.random() + 2);
@@ -91,7 +92,6 @@ function main(result) {
         window.rustwasm.clearUniverse();
         window.lifeupdate();
     };
-    window.handle = 0;
     let playing = false;
     window.play = () => {
         if (playing) {
