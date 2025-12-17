@@ -142,7 +142,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         window.lifeupdate();
     };
 
-    window.addNoise = (amt): void => {
+    window.addNoise = (amt: number): void => {
         window.rustwasm.addNoiseToUniverse(amt);
         window.lifeupdate();
     }
