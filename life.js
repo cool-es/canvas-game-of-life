@@ -74,12 +74,11 @@ function main(result) {
         return popcount;
     };
     window.addGlider = () => {
-        let offsetX = Math.trunc((uniX - 4) * Math.random() + 2);
-        let offsetY = Math.trunc((uniY - 4) * Math.random() + 2);
-        let signX = Math.sign(Math.random() - 0.5);
-        let signY = Math.sign(Math.random() - 0.5);
-        for (let i = 0; i < 5; i++) {
-            let [a, b] = [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]][i];
+        const offset = (x) => Math.trunc((x - 4) * Math.random() + 2);
+        const sign = () => Math.sign(Math.random() - 0.5);
+        const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
+        const [signX, signY] = [sign(), sign()];
+        for (const [a, b] of [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]]) {
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
         window.lifeupdate();
@@ -98,14 +97,11 @@ function main(result) {
             stopLife();
         }
         else {
-            startLife();
+            playing = true;
+            pb.innerText = 'Pause';
+            requestAnimationFrame(startLoop);
         }
     };
-    function startLife() {
-        playing = true;
-        pb.innerText = 'Pause';
-        requestAnimationFrame(startLoop);
-    }
     function stopLife() {
         playing = false;
         pb.innerText = 'Play';
