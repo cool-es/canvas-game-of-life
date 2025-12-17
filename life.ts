@@ -100,10 +100,10 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     }
 
     const pb = document.getElementById('pb') as HTMLButtonElement;
-    window.lifeupdate = (): void => {
+    window.lifeupdate = (): number => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
-        let dead: boolean = true;
+        let popcount: number = 0;
         if (uint8Cache.buffer.detached) {
             console.warn("lifeupdate: buffer detached, renewing...");
             uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
@@ -118,14 +118,16 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
                         cellWidth,
                         cellWidth
                     );
-                    dead = false;
+                    popcount++;
                 }
             }
         }
-        if (dead) { stopLife(); }
-        pb.disabled = dead;
+        if (popcount == 0) { stopLife(); }
+        pb.disabled = popcount == 0;
+        // pb.disabled = popcount;
         canvas2d.fillStyle = "white";
         canvas2d.fill();
+        return popcount;
     };
 
     window.addGlider = (): void => {
