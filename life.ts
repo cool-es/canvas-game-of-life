@@ -6,7 +6,6 @@ declare global {
         addGlider: () => void;
         addNoise: (amt: number) => void;
         clearUni: () => void;
-        handle: number;
         lifeupdate: () => void;
         maxStr: () => number;
         play: () => void;
@@ -124,7 +123,6 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         }
         if (popcount == 0) { stopLife(); }
         pb.disabled = popcount == 0;
-        // pb.disabled = popcount;
         canvas2d.fillStyle = "white";
         canvas2d.fill();
         return popcount;
@@ -153,7 +151,6 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         window.lifeupdate();
     }
 
-    window.handle = 0;
     let playing = false;
     window.play = (): void => {
         if (playing) {
@@ -190,40 +187,6 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
             requestAnimationFrame(t => { loopLoop(t) });
         }
     }
-
-    /*     window.runLife = (): void => {
-            // function lifecheck(str: string): void {
-            //     const a = uint8Cache.subarray(uniPtr, uniPtr + uniLen);
-            //     let count = 0;
-            //     for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
-            //     console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / uniLen) / 10}%)`);
-            // }
-    
-            // fill universe with white noise
-            window.rustwasm.addNoiseToUniverse(0.3);
-            // lifecheck('Initial');
-            window.lifeupdate();
-            perfZero = performance.now();
-            const cycles = 10000;
-            for (let i = 0; i < cycles; i++) {
-                window.rustwasm.tickUniverse();
-            }
-    
-            console.log(`Simulated ${cycles} generations in ${performance.now() - perfZero}ms`);
-            // lifecheck('JS/WASM');
-            window.lifeupdate();
-    
-            window.rustwasm.addNoiseToUniverse(0.7);
-            // lifecheck('Initial');
-            window.lifeupdate();
-            perfZero = performance.now();
-            window.rustwasm.timeCrunch(cycles);
-    
-            console.log(`Crunched ${cycles} generations in ${performance.now() - perfZero}ms`);
-            // lifecheck('WASM');
-            window.lifeupdate();
-        };
-     */
 }
 
 // on failure
