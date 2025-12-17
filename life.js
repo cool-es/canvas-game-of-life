@@ -125,23 +125,6 @@ function main(result) {
             requestAnimationFrame(t => { loopLoop(t); });
         }
     }
-    window.runLife = () => {
-        window.rustwasm.addNoiseToUniverse(0.3);
-        window.lifeupdate();
-        perfZero = performance.now();
-        const cycles = 10000;
-        for (let i = 0; i < cycles; i++) {
-            window.rustwasm.tickUniverse();
-        }
-        console.log(`Simulated ${cycles} generations in ${performance.now() - perfZero}ms`);
-        window.lifeupdate();
-        window.rustwasm.addNoiseToUniverse(0.7);
-        window.lifeupdate();
-        perfZero = performance.now();
-        window.rustwasm.timeCrunch(cycles);
-        console.log(`Crunched ${cycles} generations in ${performance.now() - perfZero}ms`);
-        window.lifeupdate();
-    };
 }
 function failure(error) {
     console.error(error);

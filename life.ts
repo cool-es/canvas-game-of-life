@@ -189,38 +189,39 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         }
     }
 
-    window.runLife = (): void => {
-        // function lifecheck(str: string): void {
-        //     const a = uint8Cache.subarray(uniPtr, uniPtr + uniLen);
-        //     let count = 0;
-        //     for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
-        //     console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / uniLen) / 10}%)`);
-        // }
-
-        // fill universe with white noise
-        window.rustwasm.addNoiseToUniverse(0.3);
-        // lifecheck('Initial');
-        window.lifeupdate();
-        perfZero = performance.now();
-        const cycles = 10000;
-        for (let i = 0; i < cycles; i++) {
-            window.rustwasm.tickUniverse();
-        }
-
-        console.log(`Simulated ${cycles} generations in ${performance.now() - perfZero}ms`);
-        // lifecheck('JS/WASM');
-        window.lifeupdate();
-
-        window.rustwasm.addNoiseToUniverse(0.7);
-        // lifecheck('Initial');
-        window.lifeupdate();
-        perfZero = performance.now();
-        window.rustwasm.timeCrunch(cycles);
-
-        console.log(`Crunched ${cycles} generations in ${performance.now() - perfZero}ms`);
-        // lifecheck('WASM');
-        window.lifeupdate();
-    };
+    /*     window.runLife = (): void => {
+            // function lifecheck(str: string): void {
+            //     const a = uint8Cache.subarray(uniPtr, uniPtr + uniLen);
+            //     let count = 0;
+            //     for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
+            //     console.log(`${str} - population count: ${count} (${Math.round((1000 * count) / uniLen) / 10}%)`);
+            // }
+    
+            // fill universe with white noise
+            window.rustwasm.addNoiseToUniverse(0.3);
+            // lifecheck('Initial');
+            window.lifeupdate();
+            perfZero = performance.now();
+            const cycles = 10000;
+            for (let i = 0; i < cycles; i++) {
+                window.rustwasm.tickUniverse();
+            }
+    
+            console.log(`Simulated ${cycles} generations in ${performance.now() - perfZero}ms`);
+            // lifecheck('JS/WASM');
+            window.lifeupdate();
+    
+            window.rustwasm.addNoiseToUniverse(0.7);
+            // lifecheck('Initial');
+            window.lifeupdate();
+            perfZero = performance.now();
+            window.rustwasm.timeCrunch(cycles);
+    
+            console.log(`Crunched ${cycles} generations in ${performance.now() - perfZero}ms`);
+            // lifecheck('WASM');
+            window.lifeupdate();
+        };
+     */
 }
 
 // on failure
