@@ -39,28 +39,17 @@ interface WasmImports {
     [key: string]: any;
 }
 
-window.onload = function () {
+window.onload = function (): void {
     WebAssembly.instantiateStreaming(fetch(wasmName), {
         console: console,
         math: Math,
         window: window,
         shim: {
-            error: len => {
-                console.error(makeString(len));
-            },
-            info: len => {
-                console.info(makeString(len));
-            },
-            log: len => {
-                console.log(makeString(len));
-            },
-            warn: len => {
-                console.warn(makeString(len));
-            },
-
-            now: () => {
-                return performance.now();
-            }
+            error: (len: number): void => console.error(makeString(len)),
+            info: (len: number): void => console.info(makeString(len)),
+            log: (len: number): void => console.log(makeString(len)),
+            warn: (len: number): void => console.warn(makeString(len)),
+            now: (): number => performance.now()
         },
     } as WasmImports)
         .then(main)
@@ -71,7 +60,7 @@ const niceDecoder = new TextDecoder;
 let uint8Cache: Uint8Array<ArrayBuffer>;
 let stringPtr: number;
 
-function makeString(len: number) {
+function makeString(len: number): string {
     if (uint8Cache.buffer.detached) {
         console.warn("makestring: buffer detached, renewing...");
         uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
@@ -92,7 +81,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
     stringPtr = window.rustwasm.getInfo(2);
 
-    window.maxStr = () => { return window.rustwasm.getInfo(21); }
+    window.maxStr = (): number => window.rustwasm.getInfo(21);
 
     const cellGap = 1;
     const cellWidth = 4;
@@ -114,7 +103,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     }
 
     const pb = document.getElementById('pb') as HTMLButtonElement;
-    window.lifeupdate = () => {
+    window.lifeupdate = (): void => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
         let dead = true;
@@ -137,7 +126,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         canvas2d.fill();
     };
 
-    window.addGlider = () => {
+    window.addGlider = (): void => {
         let offsetX = Math.trunc((uniX - 4) * Math.random() + 2);
         let offsetY = Math.trunc((uniY - 4) * Math.random() + 2);
         let signX = Math.sign(Math.random() - 0.5);
@@ -150,18 +139,18 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         window.lifeupdate();
     };
 
-    window.addNoise = (amt) => {
+    window.addNoise = (amt): void => {
         window.rustwasm.addNoiseToUniverse(amt);
         window.lifeupdate();
     }
-    window.clearUni = () => {
+    window.clearUni = (): void => {
         window.rustwasm.clearUniverse();
         window.lifeupdate();
     }
 
     window.handle = 0;
     let playing = false;
-    window.play = () => {
+    window.play = (): void => {
         if (playing) {
             stopLife();
         } else {
@@ -169,24 +158,24 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         }
     }
 
-    function startLife() {
+    function startLife(): void {
         playing = true;
         pb.innerText = 'Pause';
         requestAnimationFrame(startLoop);
     }
 
-    function stopLife() {
+    function stopLife(): void {
         playing = false;
         pb.innerText = 'Play';
     }
 
-    let zero;
-    function startLoop(timestamp: number) {
+    let zero: number;
+    function startLoop(timestamp: number): void {
         zero = timestamp;
         requestAnimationFrame(loopLoop);
     }
 
-    function loopLoop(timestamp: number) {
+    function loopLoop(timestamp: number): void {
         if (timestamp - zero > 50) {
             window.rustwasm.tickUniverse()
             window.lifeupdate();
@@ -197,8 +186,8 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         }
     }
 
-    window.runLife = () => {
-        function lifecheck(str: string) {
+    window.runLife = (): void => {
+        function lifecheck(str: string): void {
             const a = uint8Cache.subarray(uniPtr, uniPtr + uniLen);
             let count = 0;
             for (const i in a) { if ((a[i] & 1) == 1) { count++; } }
@@ -232,7 +221,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 }
 
 // on failure
-function failure(error: string) {
+function failure(error: string): void {
     console.error(error);
     (document.getElementsByTagName('body'))[0]
         .innerText = 'Parse error - unable to load WASM module!';

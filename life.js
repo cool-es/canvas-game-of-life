@@ -6,21 +6,11 @@ window.onload = function () {
         math: Math,
         window: window,
         shim: {
-            error: len => {
-                console.error(makeString(len));
-            },
-            info: len => {
-                console.info(makeString(len));
-            },
-            log: len => {
-                console.log(makeString(len));
-            },
-            warn: len => {
-                console.warn(makeString(len));
-            },
-            now: () => {
-                return performance.now();
-            }
+            error: (len) => console.error(makeString(len)),
+            info: (len) => console.info(makeString(len)),
+            log: (len) => console.log(makeString(len)),
+            warn: (len) => console.warn(makeString(len)),
+            now: () => performance.now()
         },
     })
         .then(main)
@@ -45,7 +35,7 @@ function main(result) {
     const uniX = window.rustwasm.getInfo(11);
     const uniY = window.rustwasm.getInfo(12);
     stringPtr = window.rustwasm.getInfo(2);
-    window.maxStr = () => { return window.rustwasm.getInfo(21); };
+    window.maxStr = () => window.rustwasm.getInfo(21);
     const cellGap = 1;
     const cellWidth = 4;
     const cv = document.getElementById("board");
@@ -139,7 +129,7 @@ function main(result) {
             zero = timestamp;
         }
         if (playing) {
-            requestAnimationFrame((t) => { loopLoop(t); });
+            requestAnimationFrame(t => { loopLoop(t); });
         }
     }
     window.runLife = () => {
