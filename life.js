@@ -44,10 +44,11 @@ function main(result) {
     const contols = document.getElementById("contols");
     contols.style = `width: ${(cellGap + cellWidth) * uniX}px;`;
     const canvas2d = cv.getContext("2d");
+    const pb = document.getElementById('pb');
+    pb.disabled = true;
     for (const i of document.getElementsByClassName("life")) {
         i.hidden = false;
     }
-    const pb = document.getElementById('pb');
     window.lifeupdate = () => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();

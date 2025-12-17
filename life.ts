@@ -94,12 +94,15 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
     const canvas2d = cv.getContext("2d") as CanvasRenderingContext2D;
 
+    // identify and disable play button on page load
+    const pb = document.getElementById('pb') as HTMLButtonElement;
+    pb.disabled = true;
+
     // unhide page elements on successful page load (hidden by default)
     for (const i of document.getElementsByClassName("life")) {
         (i as HTMLElement).hidden = false;
     }
 
-    const pb = document.getElementById('pb') as HTMLButtonElement;
     window.lifeupdate = (): number => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
