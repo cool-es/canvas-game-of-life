@@ -115,7 +115,12 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
                 if ((a[i + j * uniX] & 1) == 1) {
-                    canvas2d.rect(1 + (cellGap + cellWidth) * i, 1 + (cellGap + cellWidth) * j, cellWidth, cellWidth);
+                    canvas2d.rect(
+                        1 + (cellGap + cellWidth) * i,
+                        1 + (cellGap + cellWidth) * j,
+                        cellWidth,
+                        cellWidth
+                    );
                     dead = false;
                 }
             }
