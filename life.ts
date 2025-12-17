@@ -74,17 +74,17 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
     uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
 
-    const uniPtr = window.rustwasm.getInfo(1);
-    const uniLen = window.rustwasm.getInfo(10);
-    const uniX = window.rustwasm.getInfo(11);
-    const uniY = window.rustwasm.getInfo(12);
+    const uniPtr: number = window.rustwasm.getInfo(1);
+    const uniLen: number = window.rustwasm.getInfo(10);
+    const uniX: number = window.rustwasm.getInfo(11);
+    const uniY: number = window.rustwasm.getInfo(12);
 
     stringPtr = window.rustwasm.getInfo(2);
 
     window.maxStr = (): number => window.rustwasm.getInfo(21);
 
-    const cellGap = 1;
-    const cellWidth = 4;
+    const cellGap: number = 1;
+    const cellWidth: number = 4;
 
     const cv = document.getElementById("board") as HTMLCanvasElement;
     if (!cv) throw new Error("Canvas element not found!");
@@ -106,7 +106,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     window.lifeupdate = (): void => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
-        let dead = true;
+        let dead: boolean = true;
         if (uint8Cache.buffer.detached) {
             console.warn("lifeupdate: buffer detached, renewing...");
             uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
@@ -132,10 +132,10 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     };
 
     window.addGlider = (): void => {
-        let offsetX = Math.trunc((uniX - 4) * Math.random() + 2);
-        let offsetY = Math.trunc((uniY - 4) * Math.random() + 2);
-        let signX = Math.sign(Math.random() - 0.5);
-        let signY = Math.sign(Math.random() - 0.5);
+        let offsetX: number = Math.trunc((uniX - 4) * Math.random() + 2);
+        let offsetY: number = Math.trunc((uniY - 4) * Math.random() + 2);
+        let signX: number = Math.sign(Math.random() - 0.5);
+        let signY: number = Math.sign(Math.random() - 0.5);
 
         for (let i = 0; i < 5; i++) {
             let [a, b] = [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]][i];
