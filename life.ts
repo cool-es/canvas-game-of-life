@@ -138,9 +138,13 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         const sign = (): number => Math.sign(Math.random() - 0.5);
         const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
         const [signX, signY] = [sign(), sign()];
+        const variant = Math.floor(Math.random() * 2);
 
         // draw the glider's pixels
-        for (const [a, b] of [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]]) {
+        for (const [a, b] of [
+            [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]],
+            [[0, 0], [1, 1], [1, 2], [2, 0], [2, 1]],
+        ][variant]) {
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
 
