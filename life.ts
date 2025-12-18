@@ -4,6 +4,7 @@ let perfZero: number = performance.now();
 declare global {
     interface Window {
         addGlider: () => void;
+        addLWSS: () => void;
         addNoise: (amt: number) => void;
         clearUni: () => void;
         lifeupdate: () => void;
@@ -145,6 +146,28 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
             [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]],
             [[0, 0], [1, 1], [1, 2], [2, 0], [2, 1]],
         ][variant]) {
+            window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
+        }
+
+        // refresh the view
+        window.lifeupdate();
+    };
+
+    window.addLWSS = (): void => {
+        // find where and how to draw it
+        const offset = (x: number): number => Math.trunc((x - 4) * Math.random() + 2);
+        const sign = (): number => Math.sign(Math.random() - 0.5);
+        const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
+        const [signX, signY] = [sign(), sign()];
+        const mirror = Math.random() > .5;
+
+        // draw the spaceship's pixels
+        for (let [a, b] of [
+            [0, 3], [1, 4], [2, 0], [2, 4], [3, 1], [3, 2], [3, 3], [3, 4]
+        ]) {
+            if (mirror) {
+                [a, b] = [b, a];
+            }
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
 

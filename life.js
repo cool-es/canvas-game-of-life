@@ -88,6 +88,18 @@ function main(result) {
         }
         window.lifeupdate();
     };
+    window.addLWSS = () => {
+        const offset = (x) => Math.trunc((x - 4) * Math.random() + 2);
+        const sign = () => Math.sign(Math.random() - 0.5);
+        const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
+        const [signX, signY] = [sign(), sign()];
+        const mirror = Math.random() > .5;
+        for (let [a, b] of [
+            [0, 3], [1, 4], [2, 0], [2, 4], [3, 1], [3, 2], [3, 3], [3, 4]
+        ]) {
+            if (mirror) {
+                [a, b] = [b, a];
+            }
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
         window.lifeupdate();
