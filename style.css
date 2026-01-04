@@ -36,10 +36,10 @@ body {
     margin: auto;
 }
 
-.flex>.b1 {
+.flex > .b1 {
     flex: 2.86;
 }
 
-.flex>.b2 {
+.flex > .b2 {
     flex: 1;
 }

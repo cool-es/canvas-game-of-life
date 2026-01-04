@@ -13,7 +13,7 @@ window.onload = function (): void {
             info: (len: number): void => console.info(makeString(len)),
             log: (len: number): void => console.log(makeString(len)),
             warn: (len: number): void => console.warn(makeString(len)),
-            now: (): number => performance.now()
+            now: (): number => performance.now(),
         },
     } as WasmImports)
         .then(main)
@@ -23,11 +23,11 @@ window.onload = function (): void {
 // on failure
 function failure(error: string): void {
     console.error(error);
-    (document.getElementsByTagName('body'))[0]
-        .innerText = 'Parse error - unable to load WASM module!';
+    document.getElementsByTagName("body")[0].innerText =
+        "Parse error - unable to load WASM module!";
 }
 
-const niceDecoder = new TextDecoder;
+const niceDecoder = new TextDecoder();
 let uint8Cache: Uint8Array<ArrayBuffer>;
 let stringPtr: number;
 
@@ -67,7 +67,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     const canvas2d = cv.getContext("2d") as CanvasRenderingContext2D;
 
     // identify and disable play button on page load
-    const pb = document.getElementById('pb') as HTMLButtonElement;
+    const pb = document.getElementById("pb") as HTMLButtonElement;
     pb.disabled = true;
 
     // unhide page elements on successful page load (hidden by default)
@@ -98,7 +98,9 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
                 }
             }
         }
-        if (popcount == 0) { stopLife(); }
+        if (popcount == 0) {
+            stopLife();
+        }
         pb.disabled = popcount == 0;
         canvas2d.fillStyle = "white";
         canvas2d.fill();
@@ -115,8 +117,20 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
         // draw the glider's pixels
         for (const [a, b] of [
-            [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]],
-            [[0, 0], [1, 1], [1, 2], [2, 0], [2, 1]],
+            [
+                [0, 2],
+                [1, 0],
+                [1, 2],
+                [2, 1],
+                [2, 2],
+            ],
+            [
+                [0, 0],
+                [1, 1],
+                [1, 2],
+                [2, 0],
+                [2, 1],
+            ],
         ][variant]) {
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
@@ -135,7 +149,14 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
         // draw the spaceship's pixels
         for (let [a, b] of [
-            [0, 3], [1, 4], [2, 0], [2, 4], [3, 1], [3, 2], [3, 3], [3, 4]
+            [0, 3],
+            [1, 4],
+            [2, 0],
+            [2, 4],
+            [3, 1],
+            [3, 2],
+            [3, 3],
+            [3, 4],
         ]) {
             if (mirror) {
                 [a, b] = [b, a];
@@ -150,11 +171,11 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     window.addNoise = (amt: number): void => {
         window.rustwasm.addNoiseToUniverse(amt);
         window.render_frame();
-    }
+    };
     window.clearUni = (): void => {
         window.rustwasm.clearUniverse();
         window.render_frame();
-    }
+    };
 
     let playing = false;
     window.play = (): void => {
@@ -162,14 +183,14 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
             stopLife();
         } else {
             playing = true;
-            pb.innerText = 'Pause';
+            pb.innerText = "Pause";
             requestAnimationFrame(startLoop);
         }
-    }
+    };
 
     function stopLife(): void {
         playing = false;
-        pb.innerText = 'Play';
+        pb.innerText = "Play";
     }
 
     let t_zero: number;
@@ -180,14 +201,16 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
     function loopLoop(timestamp: number): void {
         if (timestamp - t_zero > 50) {
-            window.rustwasm.tickUniverse()
+            window.rustwasm.tickUniverse();
             window.render_frame();
             t_zero = timestamp;
         }
         if (playing) {
-            requestAnimationFrame(t => { loopLoop(t) });
+            requestAnimationFrame((t) => {
+                loopLoop(t);
+            });
         }
     }
 }
 
-export { };
+export {};

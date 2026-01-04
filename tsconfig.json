@@ -9,7 +9,5 @@
         "skipLibCheck": true,
         "removeComments": true
     },
-    "include": [
-        "life.ts"
-    ]
+    "include": ["life.ts"]
 }
