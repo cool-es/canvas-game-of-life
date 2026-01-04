@@ -159,7 +159,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         const sign = (): number => Math.sign(Math.random() - 0.5);
         const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
         const [signX, signY] = [sign(), sign()];
-        const mirror = Math.random() > .5;
+        const mirror = Math.random() * 2 > 1;
 
         // draw the spaceship's pixels
         for (let [a, b] of [

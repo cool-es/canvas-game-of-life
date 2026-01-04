@@ -93,7 +93,7 @@ function main(result) {
         const sign = () => Math.sign(Math.random() - 0.5);
         const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
         const [signX, signY] = [sign(), sign()];
-        const mirror = Math.random() > .5;
+        const mirror = Math.random() * 2 > 1;
         for (let [a, b] of [
             [0, 3], [1, 4], [2, 0], [2, 4], [3, 1], [3, 2], [3, 3], [3, 4]
         ]) {
