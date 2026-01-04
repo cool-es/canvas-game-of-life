@@ -107,12 +107,30 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         return popcount;
     };
 
-    window.addGlider = (): void => {
-        // find where and how to draw the glider
-        const offset = (x: number): number => Math.trunc((x - 4) * Math.random() + 2);
-        const sign = (): number => Math.sign(Math.random() - 0.5);
+    type Spaceship = (ox: number, sx: number, oy: number, sy: number) => void;
+
+    function add(x: Spaceship): void {
+        // find where and how to draw it
+        function offset(x: number): number {
+            return Math.trunc((x - 4) * Math.random() + 2);
+        }
+        function sign(): number {
+            return Math.sign(Math.random() - 0.5);
+        }
         const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
         const [signX, signY] = [sign(), sign()];
+        x(offsetX, signX, offsetY, signY);
+
+        // refresh the view
+        window.render_frame();
+    }
+
+    var glider: Spaceship = function (
+        offsetX: number,
+        signX: number,
+        offsetY: number,
+        signY: number
+    ): void {
         const variant = Math.floor(Math.random() * 2);
 
         // draw the glider's pixels
@@ -134,17 +152,14 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         ][variant]) {
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
-
-        // refresh the view
-        window.render_frame();
     };
 
-    window.addLWSS = (): void => {
-        // find where and how to draw it
-        const offset = (x: number): number => Math.trunc((x - 4) * Math.random() + 2);
-        const sign = (): number => Math.sign(Math.random() - 0.5);
-        const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
-        const [signX, signY] = [sign(), sign()];
+    var lwss: Spaceship = function (
+        offsetX: number,
+        signX: number,
+        offsetY: number,
+        signY: number
+    ): void {
         const mirror = Math.random() * 2 > 1;
 
         // draw the spaceship's pixels
@@ -163,9 +178,14 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
             }
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
+    };
 
-        // refresh the view
-        window.render_frame();
+    window.addLWSS = (): void => {
+        add(lwss);
+    };
+
+    window.addGlider = (): void => {
+        add(glider);
     };
 
     window.addNoise = (amt: number): void => {
