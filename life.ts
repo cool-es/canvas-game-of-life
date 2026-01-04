@@ -7,7 +7,7 @@ declare global {
         addLWSS: () => void;
         addNoise: (amt: number) => void;
         clearUni: () => void;
-        lifeupdate: () => void;
+        render_frame: () => void;
         maxStr: () => number;
         play: () => void;
         runLife: () => void;
@@ -104,7 +104,8 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         (i as HTMLElement).hidden = false;
     }
 
-    window.lifeupdate = (): number => {
+    // render frame to canvas element
+    window.render_frame = (): number => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
         let popcount: number = 0;
@@ -150,7 +151,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         }
 
         // refresh the view
-        window.lifeupdate();
+        window.render_frame();
     };
 
     window.addLWSS = (): void => {
@@ -172,16 +173,16 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         }
 
         // refresh the view
-        window.lifeupdate();
+        window.render_frame();
     };
 
     window.addNoise = (amt: number): void => {
         window.rustwasm.addNoiseToUniverse(amt);
-        window.lifeupdate();
+        window.render_frame();
     }
     window.clearUni = (): void => {
         window.rustwasm.clearUniverse();
-        window.lifeupdate();
+        window.render_frame();
     }
 
     let playing = false;
@@ -209,7 +210,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     function loopLoop(timestamp: number): void {
         if (timestamp - t_zero > 50) {
             window.rustwasm.tickUniverse()
-            window.lifeupdate();
+            window.render_frame();
             t_zero = timestamp;
         }
         if (playing) {
