@@ -10,7 +10,7 @@ window.onload = function () {
             info: (len) => console.info(makeString(len)),
             log: (len) => console.log(makeString(len)),
             warn: (len) => console.warn(makeString(len)),
-            now: () => performance.now()
+            now: () => performance.now(),
         },
     })
         .then(main)
@@ -18,10 +18,10 @@ window.onload = function () {
 };
 function failure(error) {
     console.error(error);
-    (document.getElementsByTagName('body'))[0]
-        .innerText = 'Parse error - unable to load WASM module!';
+    document.getElementsByTagName("body")[0].innerText =
+        "Parse error - unable to load WASM module!";
 }
-const niceDecoder = new TextDecoder;
+const niceDecoder = new TextDecoder();
 let uint8Cache;
 let stringPtr;
 function makeString(len) {
@@ -49,7 +49,7 @@ function main(result) {
     const contols = document.getElementById("contols");
     contols.style = `width: ${(cellGap + cellWidth) * uniX}px;`;
     const canvas2d = cv.getContext("2d");
-    const pb = document.getElementById('pb');
+    const pb = document.getElementById("pb");
     pb.disabled = true;
     for (const i of document.getElementsByClassName("life")) {
         i.hidden = false;
@@ -79,35 +79,65 @@ function main(result) {
         canvas2d.fill();
         return popcount;
     };
-    window.addGlider = () => {
-        const offset = (x) => Math.trunc((x - 4) * Math.random() + 2);
-        const sign = () => Math.sign(Math.random() - 0.5);
+    function add(x) {
+        function offset(x) {
+            return Math.trunc((x - 4) * Math.random() + 2);
+        }
+        function sign() {
+            return Math.sign(Math.random() - 0.5);
+        }
         const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
         const [signX, signY] = [sign(), sign()];
+        for (let [a, b] of x()) {
+            window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
+        }
+        window.render_frame();
+    }
+    function glider() {
         const variant = Math.floor(Math.random() * 2);
-        for (const [a, b] of [
-            [[0, 2], [1, 0], [1, 2], [2, 1], [2, 2]],
-            [[0, 0], [1, 1], [1, 2], [2, 0], [2, 1]],
-        ][variant]) {
-            window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
-        }
-        window.render_frame();
-    };
-    window.addLWSS = () => {
-        const offset = (x) => Math.trunc((x - 4) * Math.random() + 2);
-        const sign = () => Math.sign(Math.random() - 0.5);
-        const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
-        const [signX, signY] = [sign(), sign()];
+        return [
+            [
+                [0, 2],
+                [1, 0],
+                [1, 2],
+                [2, 1],
+                [2, 2],
+            ],
+            [
+                [0, 0],
+                [1, 1],
+                [1, 2],
+                [2, 0],
+                [2, 1],
+            ],
+        ][variant];
+    }
+    function lwss() {
         const mirror = Math.random() * 2 > 1;
-        for (let [a, b] of [
-            [0, 3], [1, 4], [2, 0], [2, 4], [3, 1], [3, 2], [3, 3], [3, 4]
-        ]) {
+        return [
+            [0, 3],
+            [1, 4],
+            [2, 0],
+            [2, 4],
+            [3, 1],
+            [3, 2],
+            [3, 3],
+            [3, 4],
+        ].map((v) => {
+            let [a, b] = v;
             if (mirror) {
-                [a, b] = [b, a];
+                return [b, a];
             }
-            window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
-        }
-        window.render_frame();
+            else {
+                return [a, b];
+            }
+        });
+    }
+    window.addLWSS = () => {
+        add(lwss);
+    };
+    window.addGlider = () => {
+        add(glider);
     };
     window.addNoise = (amt) => {
         window.rustwasm.addNoiseToUniverse(amt);
@@ -124,13 +154,13 @@ function main(result) {
         }
         else {
             playing = true;
-            pb.innerText = 'Pause';
+            pb.innerText = "Pause";
             requestAnimationFrame(startLoop);
         }
     };
     function stopLife() {
         playing = false;
-        pb.innerText = 'Play';
+        pb.innerText = "Play";
     }
     let t_zero;
     function startLoop(timestamp) {
@@ -144,7 +174,9 @@ function main(result) {
             t_zero = timestamp;
         }
         if (playing) {
-            requestAnimationFrame(t => { loopLoop(t); });
+            requestAnimationFrame((t) => {
+                loopLoop(t);
+            });
         }
     }
 }

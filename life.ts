@@ -107,9 +107,9 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         return popcount;
     };
 
-    type Spaceship = (ox: number, sx: number, oy: number, sy: number) => void;
+    type Coords = Iterable<number[]>;
 
-    function add(x: Spaceship): void {
+    function add(x: () => Coords): void {
         // find where and how to draw it
         function offset(x: number): number {
             return Math.trunc((x - 4) * Math.random() + 2);
@@ -119,22 +119,19 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         }
         const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
         const [signX, signY] = [sign(), sign()];
-        x(offsetX, signX, offsetY, signY);
+
+        for (let [a, b] of x()) {
+            window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
+        }
 
         // refresh the view
         window.render_frame();
     }
 
-    var glider: Spaceship = function (
-        offsetX: number,
-        signX: number,
-        offsetY: number,
-        signY: number
-    ): void {
+    function glider(): Coords {
         const variant = Math.floor(Math.random() * 2);
 
-        // draw the glider's pixels
-        for (const [a, b] of [
+        return [
             [
                 [0, 2],
                 [1, 0],
@@ -149,21 +146,14 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
                 [2, 0],
                 [2, 1],
             ],
-        ][variant]) {
-            window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
-        }
-    };
+        ][variant];
+    }
 
-    var lwss: Spaceship = function (
-        offsetX: number,
-        signX: number,
-        offsetY: number,
-        signY: number
-    ): void {
+    function lwss(): Coords {
         const mirror = Math.random() * 2 > 1;
 
         // draw the spaceship's pixels
-        for (let [a, b] of [
+        return [
             [0, 3],
             [1, 4],
             [2, 0],
@@ -172,13 +162,15 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
             [3, 2],
             [3, 3],
             [3, 4],
-        ]) {
+        ].map((v): number[] => {
+            let [a, b] = v;
             if (mirror) {
-                [a, b] = [b, a];
+                return [b, a];
+            } else {
+                return [a, b];
             }
-            window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
-        }
-    };
+        });
+    }
 
     window.addLWSS = (): void => {
         add(lwss);
