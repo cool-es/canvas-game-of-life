@@ -16,6 +16,11 @@ window.onload = function () {
         .then(main)
         .catch(failure);
 };
+function failure(error) {
+    console.error(error);
+    (document.getElementsByTagName('body'))[0]
+        .innerText = 'Parse error - unable to load WASM module!';
+}
 const niceDecoder = new TextDecoder;
 let uint8Cache;
 let stringPtr;
@@ -49,7 +54,7 @@ function main(result) {
     for (const i of document.getElementsByClassName("life")) {
         i.hidden = false;
     }
-    window.lifeupdate = () => {
+    window.render_frame = () => {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
         let popcount = 0;
@@ -86,7 +91,7 @@ function main(result) {
         ][variant]) {
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
-        window.lifeupdate();
+        window.render_frame();
     };
     window.addLWSS = () => {
         const offset = (x) => Math.trunc((x - 4) * Math.random() + 2);
@@ -102,15 +107,15 @@ function main(result) {
             }
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
-        window.lifeupdate();
+        window.render_frame();
     };
     window.addNoise = (amt) => {
         window.rustwasm.addNoiseToUniverse(amt);
-        window.lifeupdate();
+        window.render_frame();
     };
     window.clearUni = () => {
         window.rustwasm.clearUniverse();
-        window.lifeupdate();
+        window.render_frame();
     };
     let playing = false;
     window.play = () => {
@@ -135,17 +140,12 @@ function main(result) {
     function loopLoop(timestamp) {
         if (timestamp - t_zero > 50) {
             window.rustwasm.tickUniverse();
-            window.lifeupdate();
+            window.render_frame();
             t_zero = timestamp;
         }
         if (playing) {
             requestAnimationFrame(t => { loopLoop(t); });
         }
     }
-}
-function failure(error) {
-    console.error(error);
-    (document.getElementsByTagName('body'))[0]
-        .innerText = 'Parse error - unable to load WASM module!';
 }
 export {};
