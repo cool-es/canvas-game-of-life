@@ -111,7 +111,7 @@ impl DataBuf {
                 >> 4;
 
             // simple speed optimization
-            if ![2, 3].contains(&sum) {
+            if sum != 2 && sum != 3 {
                 continue;
             }
 
