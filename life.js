@@ -79,23 +79,37 @@ function main(result) {
         canvas2d.fill();
         return popcount;
     };
-    function add(x) {
-        function offset(x) {
+    function add(iter) {
+        const offset = function (x) {
             return Math.trunc((x - 4) * Math.random() + 2);
-        }
-        function sign() {
+        };
+        const sign = function () {
             return Math.sign(Math.random() - 0.5);
-        }
+        };
         const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
         const [signX, signY] = [sign(), sign()];
-        for (let [a, b] of x()) {
+        for (let [a, b] of iter) {
             window.rustwasm.toggleCell(offsetX + signX * a, offsetY + signY * b);
         }
         window.render_frame();
     }
-    function glider() {
-        const variant = Math.floor(Math.random() * 2);
-        return [
+    window.addLWSS = () => {
+        const mirror = Math.random() * 2 > 1;
+        add([
+            [0, 3],
+            [1, 4],
+            [2, 0],
+            [2, 4],
+            [3, 1],
+            [3, 2],
+            [3, 3],
+            [3, 4],
+        ].map(([a, b]) => {
+            return mirror ? [b, a] : [a, b];
+        }));
+    };
+    window.addGlider = () => {
+        add([
             [
                 [0, 2],
                 [1, 0],
@@ -110,34 +124,7 @@ function main(result) {
                 [2, 0],
                 [2, 1],
             ],
-        ][variant];
-    }
-    function lwss() {
-        const mirror = Math.random() * 2 > 1;
-        return [
-            [0, 3],
-            [1, 4],
-            [2, 0],
-            [2, 4],
-            [3, 1],
-            [3, 2],
-            [3, 3],
-            [3, 4],
-        ].map((v) => {
-            let [a, b] = v;
-            if (mirror) {
-                return [b, a];
-            }
-            else {
-                return [a, b];
-            }
-        });
-    }
-    window.addLWSS = () => {
-        add(lwss);
-    };
-    window.addGlider = () => {
-        add(glider);
+        ][Math.floor(Math.random() * 2)]);
     };
     window.addNoise = (amt) => {
         window.rustwasm.addNoiseToUniverse(amt);
