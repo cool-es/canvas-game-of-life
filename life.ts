@@ -109,14 +109,15 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
     type Coords = Iterable<number[]>;
 
+    // Add a pattern to the playing field from an iterator.
     function add(x: () => Coords): void {
         // find where and how to draw it
-        function offset(x: number): number {
+        const offset = function (x: number): number {
             return Math.trunc((x - 4) * Math.random() + 2);
-        }
-        function sign(): number {
+        };
+        const sign = function (): number {
             return Math.sign(Math.random() - 0.5);
-        }
+        };
         const [offsetX, offsetY] = [offset(uniX), offset(uniY)];
         const [signX, signY] = [sign(), sign()];
 
@@ -128,56 +129,52 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         window.render_frame();
     }
 
-    function glider(): Coords {
-        const variant = Math.floor(Math.random() * 2);
-
-        return [
-            [
-                [0, 2],
-                [1, 0],
-                [1, 2],
-                [2, 1],
-                [2, 2],
-            ],
-            [
-                [0, 0],
-                [1, 1],
-                [1, 2],
-                [2, 0],
-                [2, 1],
-            ],
-        ][variant];
-    }
-
-    function lwss(): Coords {
-        const mirror = Math.random() * 2 > 1;
-
-        // draw the spaceship's pixels
-        return [
-            [0, 3],
-            [1, 4],
-            [2, 0],
-            [2, 4],
-            [3, 1],
-            [3, 2],
-            [3, 3],
-            [3, 4],
-        ].map((v): number[] => {
-            let [a, b] = v;
-            if (mirror) {
-                return [b, a];
-            } else {
-                return [a, b];
-            }
-        });
-    }
-
     window.addLWSS = (): void => {
-        add(lwss);
+        add(
+            // pass this function into a function closure
+            function (): Coords {
+                const mirror = Math.random() * 2 > 1;
+
+                return [
+                    [0, 3],
+                    [1, 4],
+                    [2, 0],
+                    [2, 4],
+                    [3, 1],
+                    [3, 2],
+                    [3, 3],
+                    [3, 4],
+                ].map(([a, b]): number[] => {
+                    return mirror ? [b, a] : [a, b];
+                });
+            }
+        );
     };
 
     window.addGlider = (): void => {
-        add(glider);
+        add(
+            // pass this function into a function closure
+            function (): Coords {
+                const variant = Math.floor(Math.random() * 2);
+
+                return [
+                    [
+                        [0, 2],
+                        [1, 0],
+                        [1, 2],
+                        [2, 1],
+                        [2, 2],
+                    ],
+                    [
+                        [0, 0],
+                        [1, 1],
+                        [1, 2],
+                        [2, 0],
+                        [2, 1],
+                    ],
+                ][variant];
+            }
+        );
     };
 
     window.addNoise = (amt: number): void => {
