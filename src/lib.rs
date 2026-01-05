@@ -35,9 +35,9 @@ pub mod import {
     }
 }
 
-// 256×128 universe
-const WIDTH: usize = 1 << 8;
-const HEIGHT: usize = 1 << 7;
+// 230×142 universe
+const WIDTH: usize = 230;
+const HEIGHT: usize = 142;
 const LENGTH: usize = WIDTH * HEIGHT;
 
 // 512 characters
