@@ -21,6 +21,7 @@ export interface WasmExports {
     tickUniverse: () => void;
     timeCrunch: (gens: number) => void;
     toggleCell: (x: number, y: number) => void;
+    popCount: () => number;
 }
 export interface WasmImports {
     console: typeof console;

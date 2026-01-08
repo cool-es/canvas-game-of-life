@@ -208,6 +208,11 @@ pub extern "C" fn time_crunch(gens: i32) {
     }
 }
 
+#[export_name = "popCount"]
+pub extern "C" fn pop_count() -> i32 {
+    with_universe(|x| x.cells.iter().map(|&b| b as i32 & 1).sum())
+}
+
 #[export_name = "toggleCell"]
 pub extern "C" fn toggle_cell(x: i32, y: i32) {
     let index = (x as usize % WIDTH) + (y as usize % HEIGHT) * WIDTH;
