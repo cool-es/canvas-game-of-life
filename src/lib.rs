@@ -56,15 +56,84 @@ struct DataBuf {
     str_max: usize,
 }
 
-impl DataBuf {
-    fn toggle_cell(&mut self, x: i32, y: i32) {
-        let x = (x % WIDTH as i32) as usize;
-        let y = (y % HEIGHT as i32) as usize;
+// universe static mut
+static mut UNIVERSE: DataBuf = DataBuf {
+    cells: [0; LENGTH],
+    text: [0; TEXTLEN],
+    str_max: 0,
+};
 
-        self.cells[x + y * WIDTH] ^= 1;
+#[allow(static_mut_refs)]
+// ~one single instance of "unsafe", instead of many
+fn with_universe<F, R>(func: F) -> R
+where
+    F: FnOnce(&mut DataBuf) -> R,
+{
+    unsafe { func(&mut UNIVERSE) }
+}
+
+// for use with the shim::error/info/log functions
+fn print<T>(msg: T, func: unsafe extern "C" fn(usize))
+where
+    T: AsRef<[u8]>,
+{
+    with_universe(|uni| {
+        let arr = msg.as_ref();
+        let len = arr.len().min(TEXTLEN);
+        uni.str_max = uni.str_max.max(len);
+
+        for (a, b) in &mut uni.text.iter_mut().zip(arr.iter()) {
+            *a = *b;
+        }
+
+        unsafe {
+            func(len);
+        }
+    })
+}
+
+#[export_name = "getInfo"]
+pub extern "C" fn get_info(index: i32) -> i32 {
+    match index {
+        1 => with_universe(|uni| uni.cells.as_ptr() as i32),
+        10 => LENGTH as i32,
+        11 => WIDTH as i32,
+        12 => HEIGHT as i32,
+
+        2 => with_universe(|uni| uni.text.as_ptr() as i32),
+        20 => TEXTLEN as i32,
+        21 => with_universe(|uni| uni.str_max as i32),
+
+        _ => -999,
     }
+}
 
-    fn tick_universe(&mut self) {
+#[export_name = "addNoiseToUniverse"]
+pub extern "C" fn add_noise_to_universe(density: f32) {
+    with_universe(|uni| {
+        print("*pssshhhh*", shim::info);
+
+        let mut rng = oorandom::Rand32::new(unsafe { math::random() }.to_bits() as u64);
+
+        for i in uni.cells.iter_mut() {
+            *i ^= u8::from(rng.rand_float() < density);
+        }
+    });
+}
+
+#[export_name = "clearUniverse"]
+pub extern "C" fn clear_universe() {
+    with_universe(|uni| {
+        print("clearbing!!", shim::info);
+        for i in uni.cells.iter_mut() {
+            *i = 0;
+        }
+    });
+}
+
+#[export_name = "tickUniverse"]
+pub extern "C" fn tick_universe() {
+    with_universe(|uni| {
         // encoding: last bits of u8
         //         ... 0  0  0  0  0
         //     bit ... 4  3  2  1  0
@@ -75,7 +144,7 @@ impl DataBuf {
         // the bottom bits.
 
         // set array
-        for c in self.cells.iter_mut() {
+        for c in uni.cells.iter_mut() {
             *c = if (*c & 1) == 1 { 1 << 4 } else { 0 };
         }
 
@@ -100,14 +169,14 @@ impl DataBuf {
 
         for index in 0..LENGTH {
             // sum of previous-generation neighbors
-            let sum = (self.cells[u(index) % LENGTH]
-                + self.cells[d(index) % LENGTH]
-                + self.cells[l(index) % LENGTH]
-                + self.cells[r(index) % LENGTH]
-                + self.cells[u(l(index)) % LENGTH]
-                + self.cells[d(l(index)) % LENGTH]
-                + self.cells[u(r(index)) % LENGTH]
-                + self.cells[d(r(index)) % LENGTH])
+            let sum = (uni.cells[u(index) % LENGTH]
+                + uni.cells[d(index) % LENGTH]
+                + uni.cells[l(index) % LENGTH]
+                + uni.cells[r(index) % LENGTH]
+                + uni.cells[u(l(index)) % LENGTH]
+                + uni.cells[d(l(index)) % LENGTH]
+                + uni.cells[u(r(index)) % LENGTH]
+                + uni.cells[d(r(index)) % LENGTH])
                 >> 4;
 
             // simple speed optimization
@@ -115,12 +184,12 @@ impl DataBuf {
                 continue;
             }
 
-            if self.cells[index] == 1 << 4 {
+            if uni.cells[index] == 1 << 4 {
                 // cell was alive when tick began
                 match sum {
                     // 2 or 3 neighbors: cell lives
                     // set lowest bit ("alive in next gen")
-                    2 | 3 => self.cells[index] ^= 1,
+                    2 | 3 => uni.cells[index] ^= 1,
 
                     // otherwise cell dies
                     // lowest bit left blank
@@ -131,101 +200,10 @@ impl DataBuf {
                 // 3 neighbors: cell is born
                 // set lowest bit ("alive in next gen")
                 // otherwise nothing happens, lowest bit left blank
-                self.cells[index] ^= 1
+                uni.cells[index] ^= 1
             }
         }
-    }
-
-    fn clear_universe(&mut self) {
-        print("clearbing!!", shim::info);
-        for i in self.cells.iter_mut() {
-            *i = 0;
-        }
-    }
-
-    fn add_noise_to_universe(&mut self, density: f32) {
-        print("*pssshhhh*", shim::info);
-
-        let mut rng = unsafe { oorandom::Rand32::new(math::random().to_bits() as u64) };
-        for i in self.cells.iter_mut() {
-            *i ^= u8::from(rng.rand_float() < density);
-        }
-    }
-
-    fn print<T>(&mut self, msg: T, func: unsafe extern "C" fn(usize))
-    where
-        T: AsRef<[u8]>,
-    {
-        let arr = msg.as_ref();
-        let len = arr.len().min(TEXTLEN);
-        let str_max = &mut self.str_max;
-        if len > *str_max {
-            *str_max = len;
-        }
-
-        for (a, b) in &mut self.text.iter_mut().zip(arr.iter()) {
-            *a = *b;
-        }
-
-        unsafe {
-            func(len);
-        }
-    }
-}
-
-// universe static mut
-static mut UNIVERSE: DataBuf = DataBuf {
-    cells: [0; LENGTH],
-    text: [0; TEXTLEN],
-    str_max: 0,
-};
-
-#[allow(static_mut_refs)]
-// ~one single instance of "unsafe", instead of many
-fn with_universe<F, R>(func: F) -> R
-where
-    F: FnOnce(&mut DataBuf) -> R,
-{
-    unsafe { func(&mut UNIVERSE) }
-}
-
-// for use with the shim::error/info/log functions
-fn print<T>(msg: T, func: unsafe extern "C" fn(usize))
-where
-    T: AsRef<[u8]>,
-{
-    with_universe(|u| u.print(msg, func))
-}
-
-#[export_name = "getInfo"]
-pub extern "C" fn get_info(index: i32) -> i32 {
-    match index {
-        1 => with_universe(|u| u.cells.as_ptr() as i32),
-        10 => LENGTH as i32,
-        11 => WIDTH as i32,
-        12 => HEIGHT as i32,
-
-        2 => with_universe(|u| u.text.as_ptr() as i32),
-        20 => TEXTLEN as i32,
-        21 => with_universe(|u| u.str_max as i32),
-
-        _ => -999,
-    }
-}
-
-#[export_name = "addNoiseToUniverse"]
-pub extern "C" fn add_noise_to_universe(density: f32) {
-    with_universe(|u| u.add_noise_to_universe(density))
-}
-
-#[export_name = "clearUniverse"]
-pub extern "C" fn clear_universe() {
-    with_universe(|u| u.clear_universe())
-}
-
-#[export_name = "tickUniverse"]
-pub extern "C" fn tick_universe() {
-    with_universe(|u| u.tick_universe())
+    });
 }
 
 #[export_name = "timeCrunch"]
@@ -237,5 +215,10 @@ pub extern "C" fn time_crunch(gens: i32) {
 
 #[export_name = "toggleCell"]
 pub extern "C" fn toggle_cell(x: i32, y: i32) {
-    with_universe(|u| u.toggle_cell(x, y));
+    with_universe(|uni| {
+        let x = (x % WIDTH as i32) as usize;
+        let y = (y % HEIGHT as i32) as usize;
+
+        uni.cells[x + y * WIDTH] ^= 1;
+    });
 }
