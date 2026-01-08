@@ -22,61 +22,70 @@ function failure(error) {
         "Parse error - unable to load WASM module!";
 }
 const niceDecoder = new TextDecoder();
-let uint8Cache;
 let stringPtr;
-function makeString(len) {
-    if (uint8Cache.buffer.detached) {
-        console.warn("makestring: buffer detached, renewing...");
-        uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
+let uint8Cache;
+function memoryBuffer(ptr, len) {
+    let output;
+    try {
+        output = uint8Cache.subarray(ptr, ptr + len);
     }
-    return niceDecoder.decode(uint8Cache.subarray(stringPtr, stringPtr + len));
+    catch {
+        uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
+        output = uint8Cache.subarray(ptr, ptr + len);
+    }
+    return output;
+}
+function makeString(len) {
+    return niceDecoder.decode(memoryBuffer(stringPtr, len));
 }
 function main(result) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
     window.rustwasm = result.instance.exports;
-    uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
-    const uniPtr = window.rustwasm.getInfo(1);
-    const uniLen = window.rustwasm.getInfo(10);
-    const uniX = window.rustwasm.getInfo(11);
-    const uniY = window.rustwasm.getInfo(12);
-    stringPtr = window.rustwasm.getInfo(2);
-    window.maxStr = () => window.rustwasm.getInfo(21);
+    function getInfo(x) {
+        const data = window.rustwasm.getInfo(x);
+        if (data == -999) {
+            return null;
+        }
+        return data;
+    }
+    const uniPtr = getInfo(1);
+    const uniLen = getInfo(10);
+    const uniX = getInfo(11);
+    const uniY = getInfo(12);
+    stringPtr = getInfo(2);
+    window.maxStr = () => getInfo(21);
     const cellGap = 1;
     const cellWidth = 4;
-    const cv = document.getElementById("board");
-    cv.width = (cellGap + cellWidth) * uniX - cellGap + 2;
-    cv.height = (cellGap + cellWidth) * uniY - cellGap + 2;
-    const contols = document.getElementById("contols");
-    contols.style = `width: ${(cellGap + cellWidth) * uniX}px;`;
-    const canvas2d = cv.getContext("2d");
-    const pb = document.getElementById("pb");
-    pb.disabled = true;
+    const canvas = document.getElementById("canvas");
+    canvas.width = (cellGap + cellWidth) * uniX - cellGap + 2;
+    canvas.height = (cellGap + cellWidth) * uniY - cellGap + 2;
+    const controls = document.getElementById("controls");
+    controls.style = `width: ${(cellGap + cellWidth) * uniX}px;`;
+    const canvas2d = canvas.getContext("2d");
+    const playButton = document.getElementById("playButton");
+    playButton.disabled = true;
     for (const i of document.getElementsByClassName("life")) {
         i.hidden = false;
     }
     window.render_frame = () => {
-        canvas2d.clearRect(0, 0, cv.width, cv.height);
+        canvas2d.clearRect(0, 0, canvas.width, canvas.height);
         canvas2d.beginPath();
         let popcount = 0;
-        if (uint8Cache.buffer.detached) {
-            console.warn("lifeupdate: buffer detached, renewing...");
-            uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
-        }
-        const a = uint8Cache.subarray(uniPtr, uniPtr + uniLen);
+        const uni = memoryBuffer(uniPtr, uniLen);
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
-                if ((a[i + j * uniX] & 1) == 1) {
+                if ((uni[i + j * uniX] & 1) == 1) {
                     canvas2d.rect(1 + (cellGap + cellWidth) * i, 1 + (cellGap + cellWidth) * j, cellWidth, cellWidth);
                     popcount++;
                 }
             }
         }
+        canvas2d.fillStyle = "white";
+        canvas2d.fill();
         if (popcount == 0) {
             stopLife();
         }
-        pb.disabled = popcount == 0;
-        canvas2d.fillStyle = "white";
-        canvas2d.fill();
+        playButton.disabled = popcount == 0;
         return popcount;
     };
     function add(iter) {
@@ -150,13 +159,13 @@ function main(result) {
         }
         else {
             playing = true;
-            pb.innerText = "Pause";
+            playButton.innerText = "Pause";
             requestAnimationFrame(startLoop);
         }
     };
     function stopLife() {
         playing = false;
-        pb.innerText = "Play";
+        playButton.innerText = "Play";
     }
     let t_zero;
     function startLoop(timestamp) {
