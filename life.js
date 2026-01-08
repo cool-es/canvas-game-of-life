@@ -94,19 +94,28 @@ function main(result) {
         window.render_frame();
     }
     window.addLWSS = () => {
-        const mirror = Math.random() * 2 > 1;
         add([
-            [0, 3],
-            [1, 4],
-            [2, 0],
-            [2, 4],
-            [3, 1],
-            [3, 2],
-            [3, 3],
-            [3, 4],
-        ].map(([a, b]) => {
-            return mirror ? [b, a] : [a, b];
-        }));
+            [
+                [0, 3],
+                [1, 4],
+                [2, 0],
+                [2, 4],
+                [3, 1],
+                [3, 2],
+                [3, 3],
+                [3, 4],
+            ],
+            [
+                [3, 0],
+                [4, 1],
+                [0, 2],
+                [4, 2],
+                [1, 3],
+                [2, 3],
+                [3, 3],
+                [4, 3],
+            ],
+        ][Math.floor(Math.random() * 2)]);
     };
     window.addGlider = () => {
         add([
