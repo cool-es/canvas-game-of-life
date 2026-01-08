@@ -91,8 +91,10 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     window.render_frame = (): number => {
         canvas2d.clearRect(0, 0, canvas.width, canvas.height);
         canvas2d.beginPath();
+
         let popcount: number = 0;
         const uni = memoryBuffer(uniPtr, uniLen);
+
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
                 if ((uni[i + j * uniX] & 1) == 1) {
@@ -106,12 +108,15 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
                 }
             }
         }
+
+        canvas2d.fillStyle = "white";
+        canvas2d.fill();
+
         if (popcount == 0) {
             stopLife();
         }
         playButton.disabled = popcount == 0;
-        canvas2d.fillStyle = "white";
-        canvas2d.fill();
+
         return popcount;
     };
 
