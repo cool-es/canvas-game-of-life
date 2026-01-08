@@ -28,15 +28,19 @@ function failure(error: string): void {
 }
 
 const niceDecoder = new TextDecoder();
-let uint8Cache: Uint8Array<ArrayBuffer>;
 let stringPtr: number;
 
+let uint8Cache: Uint8Array<ArrayBuffer>;
 function memoryBuffer(ptr: number, len: number): Uint8Array<ArrayBuffer> {
-    if (uint8Cache.buffer.detached) {
-        console.warn("buffer detached, renewing...");
+    let output: Uint8Array<ArrayBuffer>;
+    try {
+        output = uint8Cache.subarray(ptr, ptr + len);
+    } catch {
+        // memory buffer is detached or uninitialized
         uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
+        output = uint8Cache.subarray(ptr, ptr + len);
     }
-    return uint8Cache.subarray(ptr, ptr + len);
+    return output;
 }
 
 function makeString(len: number): string {
@@ -46,8 +50,6 @@ function makeString(len: number): string {
 function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     console.log(`WASM loaded! ${performance.now() - perfZero}ms`);
     window.rustwasm = result.instance.exports as unknown as WasmExports;
-
-    uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
 
     function getInfo(x: number): number | null {
         const data = window.rustwasm.getInfo(x);
