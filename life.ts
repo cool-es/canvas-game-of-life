@@ -69,18 +69,18 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
     const cellGap: number = 1;
     const cellWidth: number = 4;
 
-    const cv = document.getElementById("board") as HTMLCanvasElement;
-    cv.width = (cellGap + cellWidth) * uniX - cellGap + 2;
-    cv.height = (cellGap + cellWidth) * uniY - cellGap + 2;
+    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    canvas.width = (cellGap + cellWidth) * uniX - cellGap + 2;
+    canvas.height = (cellGap + cellWidth) * uniY - cellGap + 2;
 
-    const contols = document.getElementById("contols") as HTMLElement;
-    contols.style = `width: ${(cellGap + cellWidth) * uniX}px;`;
+    const controls = document.getElementById("controls") as HTMLElement;
+    controls.style = `width: ${(cellGap + cellWidth) * uniX}px;`;
 
-    const canvas2d = cv.getContext("2d") as CanvasRenderingContext2D;
+    const canvas2d = canvas.getContext("2d") as CanvasRenderingContext2D;
 
     // identify and disable play button on page load
-    const pb = document.getElementById("pb") as HTMLButtonElement;
-    pb.disabled = true;
+    const playButton = document.getElementById("playButton") as HTMLButtonElement;
+    playButton.disabled = true;
 
     // unhide page elements on successful page load (hidden by default)
     for (const i of document.getElementsByClassName("life")) {
@@ -89,13 +89,13 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
     // render frame to canvas element
     window.render_frame = (): number => {
-        canvas2d.clearRect(0, 0, cv.width, cv.height);
+        canvas2d.clearRect(0, 0, canvas.width, canvas.height);
         canvas2d.beginPath();
         let popcount: number = 0;
-        const a = memoryBuffer(uniPtr, uniLen);
+        const uni = memoryBuffer(uniPtr, uniLen);
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
-                if ((a[i + j * uniX] & 1) == 1) {
+                if ((uni[i + j * uniX] & 1) == 1) {
                     canvas2d.rect(
                         1 + (cellGap + cellWidth) * i,
                         1 + (cellGap + cellWidth) * j,
@@ -109,7 +109,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         if (popcount == 0) {
             stopLife();
         }
-        pb.disabled = popcount == 0;
+        playButton.disabled = popcount == 0;
         canvas2d.fillStyle = "white";
         canvas2d.fill();
         return popcount;
@@ -200,14 +200,14 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
             stopLife();
         } else {
             playing = true;
-            pb.innerText = "Pause";
+            playButton.innerText = "Pause";
             requestAnimationFrame(startLoop);
         }
     };
 
     function stopLife(): void {
         playing = false;
-        pb.innerText = "Play";
+        playButton.innerText = "Play";
     }
 
     let t_zero: number;
