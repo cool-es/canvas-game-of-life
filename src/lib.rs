@@ -110,11 +110,10 @@ pub extern "C" fn get_info(index: i32) -> i32 {
 
 #[export_name = "addNoiseToUniverse"]
 pub extern "C" fn add_noise_to_universe(density: f32) {
+    print("*pssshhhh*", shim::info);
+    let mut rng = oorandom::Rand32::new(unsafe { math::random() }.to_bits() as u64);
+
     with_universe(|uni| {
-        print("*pssshhhh*", shim::info);
-
-        let mut rng = oorandom::Rand32::new(unsafe { math::random() }.to_bits() as u64);
-
         for i in uni.cells.iter_mut() {
             *i ^= u8::from(rng.rand_float() < density);
         }
@@ -123,11 +122,9 @@ pub extern "C" fn add_noise_to_universe(density: f32) {
 
 #[export_name = "clearUniverse"]
 pub extern "C" fn clear_universe() {
+    print("clearbing!!", shim::info);
     with_universe(|uni| {
-        print("clearbing!!", shim::info);
-        for i in uni.cells.iter_mut() {
-            *i = 0;
-        }
+        uni.cells.copy_from_slice(&[0; LENGTH]);
     });
 }
 
@@ -214,10 +211,8 @@ pub extern "C" fn time_crunch(gens: i32) {
 
 #[export_name = "toggleCell"]
 pub extern "C" fn toggle_cell(x: i32, y: i32) {
+    let index = (x as usize % WIDTH) + (y as usize % HEIGHT) * WIDTH;
     with_universe(|uni| {
-        let x = (x % WIDTH as i32) as usize;
-        let y = (y % HEIGHT as i32) as usize;
-
-        uni.cells[x + y * WIDTH] ^= 1;
+        uni.cells[index] ^= 1;
     });
 }
