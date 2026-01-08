@@ -27,9 +27,6 @@ function failure(error: string): void {
         "Parse error - unable to load WASM module!";
 }
 
-const niceDecoder = new TextDecoder();
-let stringPtr: number;
-
 let uint8Cache: Uint8Array<ArrayBuffer>;
 function memoryBuffer(ptr: number, len: number): Uint8Array<ArrayBuffer> {
     let output: Uint8Array<ArrayBuffer>;
@@ -43,6 +40,8 @@ function memoryBuffer(ptr: number, len: number): Uint8Array<ArrayBuffer> {
     return output;
 }
 
+const niceDecoder = new TextDecoder();
+let stringPtr: number;
 function makeString(len: number): string {
     return niceDecoder.decode(memoryBuffer(stringPtr, len));
 }
