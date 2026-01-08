@@ -31,12 +31,16 @@ const niceDecoder = new TextDecoder();
 let uint8Cache: Uint8Array<ArrayBuffer>;
 let stringPtr: number;
 
-function makeString(len: number): string {
+function memoryBuffer(): Uint8Array<ArrayBuffer> {
     if (uint8Cache.buffer.detached) {
-        console.warn("makestring: buffer detached, renewing...");
+        console.warn("buffer detached, renewing...");
         uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
     }
-    return niceDecoder.decode(uint8Cache.subarray(stringPtr, stringPtr + len));
+    return uint8Cache;
+}
+
+function makeString(len: number): string {
+    return niceDecoder.decode(memoryBuffer().subarray(stringPtr, stringPtr + len));
 }
 
 function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
@@ -88,11 +92,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         canvas2d.clearRect(0, 0, cv.width, cv.height);
         canvas2d.beginPath();
         let popcount: number = 0;
-        if (uint8Cache.buffer.detached) {
-            console.warn("lifeupdate: buffer detached, renewing...");
-            uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
-        }
-        const a = uint8Cache.subarray(uniPtr, uniPtr + uniLen);
+        const a = memoryBuffer().subarray(uniPtr, uniPtr + uniLen);
         for (let i = 0; i < uniX; i++) {
             for (let j = 0; j < uniY; j++) {
                 if ((a[i + j * uniX] & 1) == 1) {
