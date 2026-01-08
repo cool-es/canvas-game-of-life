@@ -95,14 +95,14 @@ where
 #[export_name = "getInfo"]
 pub extern "C" fn get_info(index: i32) -> i32 {
     match index {
-        1 => with_universe(|uni| uni.cells.as_ptr() as i32),
+        1 => with_universe(|uni| uni.cells.as_ptr()) as i32,
         10 => LENGTH as i32,
         11 => WIDTH as i32,
         12 => HEIGHT as i32,
 
-        2 => with_universe(|uni| uni.text.as_ptr() as i32),
+        2 => with_universe(|uni| uni.text.as_ptr()) as i32,
         20 => TEXTLEN as i32,
-        21 => with_universe(|uni| uni.str_max as i32),
+        21 => with_universe(|uni| uni.str_max) as i32,
 
         _ => -999,
     }
