@@ -139,13 +139,13 @@ pub extern "C" fn tick_universe() {
     // so we can sum cell values together, and then mask out
     // the bottom bits.
 
-    fn up(ci: usize) -> usize {
+    const fn up(ci: usize) -> usize {
         ci + (LENGTH - WIDTH)
     }
-    fn down(ci: usize) -> usize {
+    const fn down(ci: usize) -> usize {
         ci + WIDTH
     }
-    fn left(ci: usize) -> usize {
+    const fn left(ci: usize) -> usize {
         if ci.is_multiple_of(WIDTH) {
             // left side; wrap to right side - klein bottle
             (LENGTH - 1) - ci
@@ -153,7 +153,7 @@ pub extern "C" fn tick_universe() {
             ci - 1
         }
     }
-    fn right(ci: usize) -> usize {
+    const fn right(ci: usize) -> usize {
         if (ci + 1).is_multiple_of(WIDTH) {
             // right side; wrap to left side - klein bottle
             (LENGTH - 1) - ci
@@ -164,8 +164,13 @@ pub extern "C" fn tick_universe() {
 
     with_universe(|uni| {
         // set array
-        for c in uni.cells.iter_mut() {
-            *c = if (*c & 1) == 1 { 1 << 4 } else { 0 };
+        for cell in uni.cells.iter_mut() {
+            *cell = if (*cell & 1) == 1 {
+                // mark "alive in next generation" cells as "alive in current generation"
+                1 << 4
+            } else {
+                0
+            };
         }
 
         for index in 0..LENGTH {
