@@ -203,8 +203,40 @@ pub extern "C" fn tick_universe() {
 
 #[export_name = "timeCrunch"]
 pub extern "C" fn time_crunch(gens: i32) {
-    for _i in 0..gens {
-        tick_universe();
+    unsafe {
+        let start = shim::now();
+        let mut gens = gens;
+
+        let mut old_count = pop_count();
+        let mut strikes = 0;
+
+        for i in 0..gens {
+            if i != 0 && i % 20 == 0 {
+                let count = pop_count();
+                if count == old_count {
+                    strikes += 1;
+
+                    if strikes >= 3 {
+                        print(
+                            format!("break at {} generations; popcount {}", i, count),
+                            shim::log,
+                        );
+                        gens = i;
+                        break;
+                    }
+                } else {
+                    old_count = count;
+                    strikes = 0;
+                }
+            }
+            tick_universe();
+        }
+
+        let time = shim::now() - start;
+        print(
+            format!("crunched {} generations in ~{} ms", gens, time),
+            shim::log,
+        );
     }
 }
 
