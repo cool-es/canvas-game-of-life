@@ -1,4 +1,3 @@
 /target
 *.js
 *.wasm
-!demo.wasm
