@@ -82,8 +82,8 @@ where
 
     with_universe(|uni| {
         uni.str_max = uni.str_max.max(len);
-        for (a, b) in &mut uni.text.iter_mut().zip(arr.iter()) {
-            *a = *b;
+        for (uni_byte, msg_byte) in &mut uni.text.iter_mut().zip(arr.iter()) {
+            *uni_byte = *msg_byte;
         }
     });
 
