@@ -45,14 +45,22 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
     uint8Cache = new Uint8Array(window.rustwasm.memory.buffer);
 
-    const uniPtr: number = window.rustwasm.getInfo(1);
-    const uniLen: number = window.rustwasm.getInfo(10);
-    const uniX: number = window.rustwasm.getInfo(11);
-    const uniY: number = window.rustwasm.getInfo(12);
+    function getInfo(x: number): number | null {
+        const data = window.rustwasm.getInfo(x);
+        if (data == -999) {
+            return null;
+        }
+        return data;
+    }
 
-    stringPtr = window.rustwasm.getInfo(2);
+    const uniPtr: number = getInfo(1)!;
+    const uniLen: number = getInfo(10)!;
+    const uniX: number = getInfo(11)!;
+    const uniY: number = getInfo(12)!;
 
-    window.maxStr = (): number => window.rustwasm.getInfo(21);
+    stringPtr = getInfo(2)!;
+
+    window.maxStr = (): number => getInfo(21)!;
 
     const cellGap: number = 1;
     const cellWidth: number = 4;
