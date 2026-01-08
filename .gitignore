@@ -1,4 +1,4 @@
 /target
-wasmname.js
+*.js
 *.wasm
 !demo.wasm
