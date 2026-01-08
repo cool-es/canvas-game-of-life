@@ -130,42 +130,42 @@ pub extern "C" fn clear_universe() {
 
 #[export_name = "tickUniverse"]
 pub extern "C" fn tick_universe() {
-    with_universe(|uni| {
-        // encoding: last bits of u8
-        //         ... 0  0  0  0  0
-        //     bit ... 4  3  2  1  0
-        // bit 4: status in generation before tick
-        // bit 0: status in generation after tick
-        // this is chosen because every cell has 8 neighbors,
-        // so we can sum cell values together, and then mask out
-        // the bottom bits.
+    // encoding: last bits of u8
+    //         ... 0  0  0  0  0
+    //     bit ... 4  3  2  1  0
+    // bit 4: status in generation before tick
+    // bit 0: status in generation after tick
+    // this is chosen because every cell has 8 neighbors,
+    // so we can sum cell values together, and then mask out
+    // the bottom bits.
 
+    fn up(ci: usize) -> usize {
+        ci + (LENGTH - WIDTH)
+    }
+    fn down(ci: usize) -> usize {
+        ci + WIDTH
+    }
+    fn left(ci: usize) -> usize {
+        if ci.is_multiple_of(WIDTH) {
+            // left side; wrap to right side - klein bottle
+            (LENGTH - 1) - ci
+        } else {
+            ci - 1
+        }
+    }
+    fn right(ci: usize) -> usize {
+        if (ci + 1).is_multiple_of(WIDTH) {
+            // right side; wrap to left side - klein bottle
+            (LENGTH - 1) - ci
+        } else {
+            ci + 1
+        }
+    }
+
+    with_universe(|uni| {
         // set array
         for c in uni.cells.iter_mut() {
             *c = if (*c & 1) == 1 { 1 << 4 } else { 0 };
-        }
-
-        fn up(ci: usize) -> usize {
-            ci + (LENGTH - WIDTH)
-        }
-        fn down(ci: usize) -> usize {
-            ci + WIDTH
-        }
-        fn left(ci: usize) -> usize {
-            if ci.is_multiple_of(WIDTH) {
-                // left side; wrap to right side - klein bottle
-                (LENGTH - 1) - ci
-            } else {
-                ci - 1
-            }
-        }
-        fn right(ci: usize) -> usize {
-            if (ci + 1).is_multiple_of(WIDTH) {
-                // right side; wrap to left side - klein bottle
-                (LENGTH - 1) - ci
-            } else {
-                ci + 1
-            }
         }
 
         for index in 0..LENGTH {
@@ -180,23 +180,17 @@ pub extern "C" fn tick_universe() {
                 + uni.cells[down(right(index)) % LENGTH])
                 >> 4;
 
-            // simple speed optimization
             if let 2 | 3 = sum {
-            } else {
-                continue;
-            }
-
-            if uni.cells[index] == 1 << 4 {
-                // cell was alive when tick began
-                if let 2 | 3 = sum {
+                if uni.cells[index] == 1 << 4 {
+                    // cell was alive when tick began
+                    // set lowest bit ("alive in next gen")
+                    uni.cells[index] ^= 1
+                } else if sum == 3 {
+                    // cell was empty when tick began
+                    // 3 neighbors: cell is born
                     uni.cells[index] ^= 1
                 }
-            } else if sum == 3 {
-                // cell was empty when tick began
-                // 3 neighbors: cell is born
-                // set lowest bit ("alive in next gen")
                 // otherwise nothing happens, lowest bit left blank
-                uni.cells[index] ^= 1
             }
         }
     });
