@@ -77,19 +77,19 @@ fn print<T>(msg: T, func: unsafe extern "C" fn(usize))
 where
     T: AsRef<[u8]>,
 {
-    with_universe(|uni| {
-        let arr = msg.as_ref();
-        let len = arr.len().min(TEXTLEN);
-        uni.str_max = uni.str_max.max(len);
+    let arr = msg.as_ref();
+    let len = arr.len().min(TEXTLEN);
 
+    with_universe(|uni| {
+        uni.str_max = uni.str_max.max(len);
         for (a, b) in &mut uni.text.iter_mut().zip(arr.iter()) {
             *a = *b;
         }
+    });
 
-        unsafe {
-            func(len);
-        }
-    })
+    unsafe {
+        func(len);
+    }
 }
 
 #[export_name = "getInfo"]
@@ -148,52 +148,51 @@ pub extern "C" fn tick_universe() {
             *c = if (*c & 1) == 1 { 1 << 4 } else { 0 };
         }
 
-        let u = |ci: usize| ci + (LENGTH - WIDTH);
-        let d = |ci: usize| ci + WIDTH;
-        let l = |ci: usize| {
+        fn up(ci: usize) -> usize {
+            ci + (LENGTH - WIDTH)
+        }
+        fn down(ci: usize) -> usize {
+            ci + WIDTH
+        }
+        fn left(ci: usize) -> usize {
             if ci.is_multiple_of(WIDTH) {
                 // left side; wrap to right side - klein bottle
                 (LENGTH - 1) - ci
             } else {
                 ci - 1
             }
-        };
-        let r = |ci: usize| {
+        }
+        fn right(ci: usize) -> usize {
             if (ci + 1).is_multiple_of(WIDTH) {
                 // right side; wrap to left side - klein bottle
                 (LENGTH - 1) - ci
             } else {
                 ci + 1
             }
-        };
+        }
 
         for index in 0..LENGTH {
             // sum of previous-generation neighbors
-            let sum = (uni.cells[u(index) % LENGTH]
-                + uni.cells[d(index) % LENGTH]
-                + uni.cells[l(index) % LENGTH]
-                + uni.cells[r(index) % LENGTH]
-                + uni.cells[u(l(index)) % LENGTH]
-                + uni.cells[d(l(index)) % LENGTH]
-                + uni.cells[u(r(index)) % LENGTH]
-                + uni.cells[d(r(index)) % LENGTH])
+            let sum = (uni.cells[up(index) % LENGTH]
+                + uni.cells[down(index) % LENGTH]
+                + uni.cells[left(index) % LENGTH]
+                + uni.cells[right(index) % LENGTH]
+                + uni.cells[up(left(index)) % LENGTH]
+                + uni.cells[down(left(index)) % LENGTH]
+                + uni.cells[up(right(index)) % LENGTH]
+                + uni.cells[down(right(index)) % LENGTH])
                 >> 4;
 
             // simple speed optimization
-            if sum != 2 && sum != 3 {
+            if let 2 | 3 = sum {
+            } else {
                 continue;
             }
 
             if uni.cells[index] == 1 << 4 {
                 // cell was alive when tick began
-                match sum {
-                    // 2 or 3 neighbors: cell lives
-                    // set lowest bit ("alive in next gen")
-                    2 | 3 => uni.cells[index] ^= 1,
-
-                    // otherwise cell dies
-                    // lowest bit left blank
-                    _ => {}
+                if let 2 | 3 = sum {
+                    uni.cells[index] ^= 1
                 }
             } else if sum == 3 {
                 // cell was empty when tick began
