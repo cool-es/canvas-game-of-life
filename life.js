@@ -70,23 +70,24 @@ function main(result) {
     window.render_frame = () => {
         canvas2d.clearRect(0, 0, canvas.width, canvas.height);
         canvas2d.beginPath();
-        let popcount = 0;
-        const uni = memoryBuffer(uniPtr, uniLen);
-        for (let i = 0; i < uniX; i++) {
-            for (let j = 0; j < uniY; j++) {
-                if ((uni[i + j * uniX] & 1) == 1) {
-                    canvas2d.rect(1 + (cellGap + cellWidth) * i, 1 + (cellGap + cellWidth) * j, cellWidth, cellWidth);
-                    popcount++;
+        const popcount = window.rustwasm.popCount();
+        if (popcount != 0) {
+            const uni = memoryBuffer(uniPtr, uniLen);
+            for (let i = 0; i < uniX; i++) {
+                for (let j = 0; j < uniY; j++) {
+                    if ((uni[i + j * uniX] & 1) == 1) {
+                        canvas2d.rect(1 + (cellGap + cellWidth) * i, 1 + (cellGap + cellWidth) * j, cellWidth, cellWidth);
+                    }
                 }
             }
+            playButton.disabled = false;
+        }
+        else {
+            stopLife();
+            playButton.disabled = true;
         }
         canvas2d.fillStyle = "white";
         canvas2d.fill();
-        if (popcount == 0) {
-            stopLife();
-        }
-        playButton.disabled = popcount == 0;
-        return popcount;
     };
     function add(iter) {
         const offset = function (x) {
