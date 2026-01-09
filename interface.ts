@@ -8,7 +8,7 @@ declare global {
         clearUni: () => void;
         render_frame: () => void;
         maxStr: () => number;
-        play: () => void;
+        playButtonClick: () => void;
         runLife: () => void;
         rustwasm: WasmExports;
     }

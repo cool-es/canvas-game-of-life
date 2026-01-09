@@ -201,7 +201,7 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
 
     let t_zero: number;
     let playing = false;
-    window.play = (): void => {
+    window.playButtonClick = (): void => {
         if (playing) {
             stopLife();
         } else {
