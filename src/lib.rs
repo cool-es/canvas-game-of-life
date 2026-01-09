@@ -139,13 +139,13 @@ pub extern "C" fn tick_universe() {
     // so we can sum cell values together, and then mask out
     // the bottom bits.
 
-    fn up(ci: usize) -> usize {
+    const fn up(ci: usize) -> usize {
         ci + (LENGTH - WIDTH)
     }
-    fn down(ci: usize) -> usize {
+    const fn down(ci: usize) -> usize {
         ci + WIDTH
     }
-    fn left(ci: usize) -> usize {
+    const fn left(ci: usize) -> usize {
         if ci.is_multiple_of(WIDTH) {
             // left side; wrap to right side - klein bottle
             (LENGTH - 1) - ci
@@ -153,7 +153,7 @@ pub extern "C" fn tick_universe() {
             ci - 1
         }
     }
-    fn right(ci: usize) -> usize {
+    const fn right(ci: usize) -> usize {
         if (ci + 1).is_multiple_of(WIDTH) {
             // right side; wrap to left side - klein bottle
             (LENGTH - 1) - ci
@@ -164,8 +164,13 @@ pub extern "C" fn tick_universe() {
 
     with_universe(|uni| {
         // set array
-        for c in uni.cells.iter_mut() {
-            *c = if (*c & 1) == 1 { 1 << 4 } else { 0 };
+        for cell in uni.cells.iter_mut() {
+            *cell = if (*cell & 1) == 1 {
+                // mark "alive in next generation" cells as "alive in current generation"
+                1 << 4
+            } else {
+                0
+            };
         }
 
         for index in 0..LENGTH {
@@ -198,9 +203,46 @@ pub extern "C" fn tick_universe() {
 
 #[export_name = "timeCrunch"]
 pub extern "C" fn time_crunch(gens: i32) {
-    for _i in 0..gens {
-        tick_universe();
+    unsafe {
+        let start = shim::now();
+        let mut gens = gens;
+
+        let mut old_count = pop_count();
+        let mut strikes = 0;
+
+        for i in 0..gens {
+            if i != 0 && i % 20 == 0 {
+                let count = pop_count();
+                if count == old_count {
+                    strikes += 1;
+
+                    if strikes >= 3 {
+                        print(
+                            format!("break at {} generations; popcount {}", i, count),
+                            shim::log,
+                        );
+                        gens = i;
+                        break;
+                    }
+                } else {
+                    old_count = count;
+                    strikes = 0;
+                }
+            }
+            tick_universe();
+        }
+
+        let time = shim::now() - start;
+        print(
+            format!("crunched {} generations in ~{} ms", gens, time),
+            shim::log,
+        );
     }
+}
+
+#[export_name = "popCount"]
+pub extern "C" fn pop_count() -> i32 {
+    with_universe(|x| x.cells.iter().map(|&b| b as i32 & 1).sum())
 }
 
 #[export_name = "toggleCell"]
