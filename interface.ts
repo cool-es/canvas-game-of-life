@@ -6,9 +6,9 @@ declare global {
         addLWSS: () => void;
         addNoise: (amt: number) => void;
         clearUni: () => void;
-        render_frame: () => void;
         maxStr: () => number;
-        play: () => void;
+        playButtonClick: () => void;
+        render_frame: () => void;
         runLife: () => void;
         rustwasm: WasmExports;
     }
@@ -18,10 +18,10 @@ export interface WasmExports {
     clearUniverse: () => void;
     getInfo: (index: number) => number;
     memory: WebAssembly.Memory;
+    popCount: () => number;
     tickUniverse: () => void;
     timeCrunch: (gens: number) => void;
     toggleCell: (x: number, y: number) => void;
-    popCount: () => number;
 }
 export interface WasmImports {
     console: typeof console;

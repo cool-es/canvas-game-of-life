@@ -199,14 +199,18 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         window.render_frame();
     };
 
+    let t_zero: number;
     let playing = false;
-    window.play = (): void => {
+    window.playButtonClick = (): void => {
         if (playing) {
             stopLife();
         } else {
             playing = true;
             playButton.innerText = "Pause";
-            requestAnimationFrame(startLoop);
+            requestAnimationFrame((timestamp: number): void => {
+                t_zero = timestamp;
+                requestAnimationFrame(loop);
+            });
         }
     };
 
@@ -215,22 +219,14 @@ function main(result: WebAssembly.WebAssemblyInstantiatedSource) {
         playButton.innerText = "Play";
     }
 
-    let t_zero: number;
-    function startLoop(timestamp: number): void {
-        t_zero = timestamp;
-        requestAnimationFrame(loopLoop);
-    }
-
-    function loopLoop(timestamp: number): void {
+    function loop(timestamp: number): void {
         if (timestamp - t_zero > 50) {
             window.rustwasm.tickUniverse();
             window.render_frame();
             t_zero = timestamp;
         }
         if (playing) {
-            requestAnimationFrame((t) => {
-                loopLoop(t);
-            });
+            requestAnimationFrame(loop);
         }
     }
 }
