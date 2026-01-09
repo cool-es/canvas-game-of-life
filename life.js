@@ -153,36 +153,33 @@ function main(result) {
         window.rustwasm.clearUniverse();
         window.render_frame();
     };
+    let t_zero;
     let playing = false;
-    window.play = () => {
+    window.playButtonClick = () => {
         if (playing) {
             stopLife();
         }
         else {
             playing = true;
             playButton.innerText = "Pause";
-            requestAnimationFrame(startLoop);
+            requestAnimationFrame((timestamp) => {
+                t_zero = timestamp;
+                requestAnimationFrame(loop);
+            });
         }
     };
     function stopLife() {
         playing = false;
         playButton.innerText = "Play";
     }
-    let t_zero;
-    function startLoop(timestamp) {
-        t_zero = timestamp;
-        requestAnimationFrame(loopLoop);
-    }
-    function loopLoop(timestamp) {
+    function loop(timestamp) {
         if (timestamp - t_zero > 50) {
             window.rustwasm.tickUniverse();
             window.render_frame();
             t_zero = timestamp;
         }
         if (playing) {
-            requestAnimationFrame((t) => {
-                loopLoop(t);
-            });
+            requestAnimationFrame(loop);
         }
     }
 }
